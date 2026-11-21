@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Registro de enfermería', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1>Registro de enfermería</h1>
+        <span class="chip" th:if="${admision != null}" th:text="${admision.tipo + (admision.camaCodigo != null ? ' · Cama ' + admision.camaCodigo : '')}"></span>
+    </div>
+    <div class="grid g-7-5">
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-heart-pulse"></i> Registrar signos vitales</div>
+                <form th:action="@{/enfermeria/paciente/{id}/signos(id=${p.id})}" method="post" autocomplete="off">
+                    <input type="hidden" name="admisionId" th:value="${admision != null ? admision.id : ''}">
+                    <div class="cuerpo">
+                        <div class="campos c6">
+                            <div class="campo"><label>TA sist.</label><input type="number" name="taSistolica"></div>
+                            <div class="campo"><label>TA diast.</label><input type="number" name="taDiastolica"></div>
+                            <div class="campo"><label>FC</label><input type="number" name="fc"></div>
+                            <div class="campo"><label>FR</label><input type="number" name="fr"></div>
+                            <div class="campo"><label>T °C</label><input type="number" step="0.1" name="temperatura"></div>
+                            <div class="campo"><label>SatO₂</label><input type="number" name="saturacion"></div>
+                            <div class="campo"><label>Glucometría</label><input type="number" name="glucometria"></div>
+                        </div>
+                        <p class="ayuda" th:text="${'Rangos: TA ' + cfg2.taSistolicaMin + '-' + cfg2.taSistolicaMax + '/' + cfg2.taDiastolicaMin + '-' + cfg2.taDiastolicaMax + ' · FC ' + cfg2.fcMin + '-' + cfg2.fcMax + ' · FR ' + cfg2.frMin + '-' + cfg2.frMax + ' · T ' + cfg2.temperaturaMin + '-' + cfg2.temperaturaMax + ' · SatO₂ ≥' + cfg2.saturacionMin}"></p>
+                    </div>
+                    <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Registrar</button></div>
+                </form>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-graph-up"></i> Historial de signos</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(signos)}">
+                        <thead><tr><th>Fecha</th><th>TA</th><th class="num">FC</th><th class="num">FR</th><th class="num">T°</th><th class="num">SatO₂</th><th class="num">Gluc.</th><th>Registró</th></tr></thead>
+                        <tbody>
+                        <tr th:each="s : ${signos}" th:classappend="${!#lists.isEmpty(s.alertas)} ? 'fila-alerta'" th:title="${#strings.listJoin(s.alertas, ' · ')}">
+                            <td th:text="${#temporals.format(s.fecha, 'dd/MM HH:mm')}"></td>
+                            <td th:text="${s.ta()}"></td>
+                            <td class="num" th:text="${s.fc}"></td>
+                            <td class="num" th:text="${s.fr}"></td>
+                            <td class="num" th:text="${s.temperatura}"></td>
+                            <td class="num" th:text="${s.saturacion}"></td>
+                            <td class="num" th:text="${s.glucometria}"></td>
+                            <td class="sub" th:text="${s.usuario}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(signos)}"><div th:replace="~{fragmentos :: vacio('Sin registros de signos')}"></div></th:block>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-capsule"></i> Administración de medicamentos</div>
+                <div class="cuerpo" th:if="${#lists.isEmpty(prescripciones)}"><div th:replace="~{fragmentos :: vacio('Sin órdenes médicas activas')}"></div></div>
+                <div class="cuerpo" th:each="pr : ${prescripciones}" style="border-bottom:1px solid var(--borde-suave)">
+                    <div class="sub" th:text="${'Orden de ' + pr.medicoNombre + ' · ' + #temporals.format(pr.fecha, 'dd/MM HH:mm')}"></div>
+                    <form th:each="it, st : ${pr.items}" th:action="@{/enfermeria/paciente/{id}/administrar(id=${p.id})}" method="post"
+                          style="margin-top:8px;padding:8px;background:var(--gris-claro);border-radius:4px">
+                        <input type="hidden" name="prescripcionId" th:value="${pr.id}">
+                        <input type="hidden" name="item" th:value="${st.index}">
+                        <div><b th:text="${it.nombre}"></b> <span class="chip rojo" th:if="${it.controlEspecial}">Control especial</span></div>
+                        <div class="sub" th:text="${'Ordenado: ' + it.dosis + ' · ' + it.via + ' · ' + it.frecuencia}"></div>
+                        <div class="campos c3" style="margin-top:6px">
+                            <div class="campo"><label>Dosis dada</label><input type="text" name="dosis" th:value="${it.dosis}" required></div>
+                            <div class="campo"><label>Vía</label><input type="text" name="via" th:value="${it.via}" required></div>
+                            <div class="campo"><label>Observación</label><input type="text" name="observacion"></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;flex-wrap:wrap">
+                            <label class="check"><input type="checkbox" name="confirmar" value="si"> Confirmo la diferencia con la orden</label>
+                            <button class="btn chico exito" type="submit"><i class="bi bi-check2"></i> Registrar administración</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-clock-history"></i> Medicamentos administrados</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(administraciones)}">
+                        <tbody>
+                        <tr th:each="ad : ${administraciones}" th:classappend="${ad.anulada} ? 'anulada'">
+                            <td><b th:text="${ad.medicamento}"></b>
+                                <div class="sub" th:text="${#temporals.format(ad.fecha, 'dd/MM HH:mm') + ' · ' + ad.dosis + ' ' + ad.via + ' · ' + ad.enfermero}"></div>
+                                <div class="sub" style="color:var(--rojo)" th:if="${ad.alerta != null}" th:text="${ad.alerta}"></div>
+                                <div class="sub" th:if="${ad.anulada}" th:text="${'Anulado: ' + ad.justificacionAnulacion}"></div></td>
+                            <td class="acc">
+                                <form th:if="${!ad.anulada}" th:action="@{/enfermeria/administracion/{id}/anular(id=${ad.id})}" method="post" style="display:flex;gap:4px">
+                                    <input type="text" name="justificacion" placeholder="Justificación" style="min-height:26px;width:130px">
+                                    <button class="btn chico" type="submit">Anular</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(administraciones)}"><div th:replace="~{fragmentos :: vacio('Sin administraciones registradas')}"></div></th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

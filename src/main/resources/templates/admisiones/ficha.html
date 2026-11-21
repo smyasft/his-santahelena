@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Ficha del paciente', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1>Ficha administrativa</h1>
+        <div class="acciones">
+            <a class="btn" th:href="@{/admisiones/paciente/{id}/editar(id=${p.id})}"><i class="bi bi-pencil"></i> Editar datos</a>
+            <form th:action="@{/admisiones/paciente/{id}/derechos(id=${p.id})}" method="post" class="en-linea">
+                <button class="btn" type="submit"><i class="bi bi-arrow-repeat"></i> Verificar derechos (ADRES)</button>
+            </form>
+            <a class="btn primario" th:href="@{/admisiones/citas(pacienteId=${p.id})}"><i class="bi bi-calendar-plus"></i> Asignar cita</a>
+        </div>
+    </div>
+    <div class="grid g-7-5">
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-calendar-week"></i> Citas</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(citas)}">
+                        <thead><tr><th>Fecha</th><th>Profesional</th><th>Especialidad</th><th>Canal</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        <tr th:each="c : ${citas}">
+                            <td th:text="${#temporals.format(c.fechaHora, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${c.profesionalNombre}"></td>
+                            <td th:text="${c.especialidad}"></td>
+                            <td th:text="${c.canal}"></td>
+                            <td><span th:replace="~{fragmentos :: estado(${c.estado})}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(citas)}"><div th:replace="~{fragmentos :: vacio('Sin citas registradas')}"></div></th:block>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-hospital"></i> Ingresos (urgencias y hospitalización)</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(admisiones)}">
+                        <thead><tr><th>Ingreso</th><th>Tipo</th><th>Motivo</th><th>Cama</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        <tr th:each="a : ${admisiones}">
+                            <td th:text="${#temporals.format(a.fechaIngreso, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${a.tipo}"></td>
+                            <td th:text="${a.motivo}"></td>
+                            <td th:text="${a.camaCodigo != null ? a.camaCodigo : '—'}"></td>
+                            <td><span th:replace="~{fragmentos :: estado(${a.estado})}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(admisiones)}"><div th:replace="~{fragmentos :: vacio('Sin ingresos')}"></div></th:block>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-truck-front"></i> Ingreso a urgencias</div>
+                <form th:action="@{/admisiones/urgencias/ingresar}" method="post">
+                    <input type="hidden" name="pacienteId" th:value="${p.id}">
+                    <div class="cuerpo">
+                        <div class="campo"><label>Motivo de consulta referido <span class="req">*</span></label><textarea name="motivo" required></textarea></div>
+                        <p class="ayuda">El paciente pasa a la cola de triaje de enfermería. Se verifica derechos automáticamente.</p>
+                    </div>
+                    <div class="pie"><button class="btn peligro" type="submit"><i class="bi bi-box-arrow-in-right"></i> Ingresar a urgencias</button></div>
+                </form>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-info-circle"></i> Datos administrativos</div>
+                <div class="cuerpo">
+                    <table class="tabla">
+                        <tr><td class="sub">Dirección</td><td th:text="${(p.direccion != null ? p.direccion : '—') + (p.municipio != null ? ', ' + p.municipio : '')}"></td></tr>
+                        <tr><td class="sub">Correo</td><td th:text="${p.email != null ? p.email : '—'}"></td></tr>
+                        <tr><td class="sub">Nivel</td><td th:text="${p.nivel != null ? p.nivel : '—'}"></td></tr>
+                        <tr><td class="sub">Consulta de derechos</td><td th:text="${p.derechosFecha != null ? #temporals.format(p.derechosFecha, 'dd/MM/yyyy HH:mm') : 'Nunca'}"></td></tr>
+                        <tr><td class="sub">Autorización de datos</td><td th:text="${p.consentimientoDatos != null ? #temporals.format(p.consentimientoDatos, 'dd/MM/yyyy') : 'Pendiente'}"></td></tr>
+                        <tr><td class="sub">Registrado por</td><td th:text="${p.creadoPor}"></td></tr>
+                    </table>
+                    <p class="ayuda">La consulta de derechos es una <b>simulación</b> de ADRES para fines académicos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

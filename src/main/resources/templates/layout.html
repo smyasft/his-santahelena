@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, contenido)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' · HIS Santa Helena'">HIS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/his.css}">
+</head>
+<body class="app">
+<aside class="sidebar" th:if="${yo != null}">
+    <a class="marca" th:href="@{/}">
+        <span class="logo"><i class="bi bi-heart-pulse-fill"></i></span>
+        <span>
+            <span class="nombre">Santa Helena</span>
+            <span class="sub">Sistema hospitalario</span>
+        </span>
+    </a>
+    <nav class="menu-lateral">
+        <a th:href="@{/}" class="inicio" th:classappend="${uri == '/'} ? 'activo'"><i class="bi bi-grid-1x2-fill"></i><span>Tablero</span></a>
+        <th:block th:each="g : ${menu}">
+            <div class="grupo-menu"><span th:text="${g.modulo.nombre}">Módulo</span></div>
+            <a th:each="it : ${g.items}" th:href="@{${it.ruta}}" th:classappend="${it.activo(uri)} ? 'activo'">
+                <i class="bi" th:classappend="${it.icono}"></i><span th:text="${it.etiqueta}">Opción</span>
+            </a>
+        </th:block>
+    </nav>
+    <div class="lado-pie">
+        <div class="tarjeta-segura">
+            <i class="bi bi-shield-check"></i>
+            <div><b>Sesión protegida</b><span>Cierre automático a los 15 min de inactividad</span></div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-salir"><i class="bi bi-box-arrow-left"></i><span>Cerrar sesión</span></button>
+        </form>
+    </div>
+</aside>
+<div class="velo" th:if="${yo != null}"></div>
+
+<div class="principal">
+    <header class="topbar">
+        <button type="button" class="menu-movil" aria-label="Menú"><i class="bi bi-list"></i></button>
+        <div class="top-titulo">
+            <div class="top-modulo" th:text="${titulo}">Módulo</div>
+            <div class="top-inst" th:text="${cfg.razonSocial + ' · ' + cfg.ciudad}">Clínica</div>
+        </div>
+        <form class="buscador" th:if="${rutaBusqueda != null}" th:action="@{${rutaBusqueda}}" method="get">
+            <i class="bi bi-search"></i>
+            <input type="search" name="q" th:placeholder="${textoBusqueda}" aria-label="Buscar">
+        </form>
+        <div class="top-der" th:if="${yo != null}">
+            <span class="reloj-chip"><i class="bi bi-clock"></i><span id="reloj"></span></span>
+            <a class="top-btn" th:href="@{/alertas}" title="Alertas">
+                <i class="bi bi-bell"></i>
+                <span class="burbuja" th:if="${alertasNoLeidas != null and alertasNoLeidas > 0}" th:text="${alertasNoLeidas}">0</span>
+            </a>
+            <a class="usuario-top" th:href="@{/perfil}" title="Mi perfil">
+                <span class="avatar" th:text="${yo.iniciales()}">AB</span>
+                <span class="txt">
+                    <span class="n" th:text="${yo.nombre}">Usuario</span>
+                    <span class="r" th:text="${yo.rolesTexto()}">Rol</span>
+                </span>
+            </a>
+        </div>
+    </header>
+
+    <section class="contenido">
+        <div class="aviso ok" th:if="${ok != null}"><i class="bi bi-check-circle-fill"></i><div th:text="${ok}">ok</div></div>
+        <div class="aviso error" th:if="${error != null}"><i class="bi bi-exclamation-octagon-fill"></i><div th:text="${error}">error</div></div>
+        <div class="aviso error" th:if="${mensajeError != null}"><i class="bi bi-exclamation-octagon-fill"></i><div th:text="${mensajeError}">error</div></div>
+        <div th:replace="${contenido}"></div>
+    </section>
+</div>
+<script th:inline="javascript">window.HIS_BASE = /*[[@{/}]]*/ '/'; window.HIS_BASE = window.HIS_BASE.replace(/\/$/, '');</script>
+<script th:src="@{/js/his.js}"></script>
+</body>
+</html>

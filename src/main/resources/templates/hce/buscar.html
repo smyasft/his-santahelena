@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Buscar historia', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Buscar historia clínica</h1><div class="ruta">Cada apertura de historia queda registrada en auditoría.</div></div>
+    <div class="panel">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/hce/buscar}" method="get">
+                <div class="campo"><label>Documento, historia o nombre</label><input type="search" name="q" th:value="${q}" autofocus></div>
+                <button class="btn primario" type="submit"><i class="bi bi-search"></i> Buscar</button>
+            </form>
+        </div>
+        <div class="cuerpo sin tabla-cont" th:if="${!#lists.isEmpty(lista)}">
+            <table class="tabla">
+                <thead><tr><th>Historia</th><th>Paciente</th><th>Documento</th><th>Edad</th><th>Alergias</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${lista}">
+                    <td><b th:text="${p.numeroHistoria}"></b></td>
+                    <td th:text="${p.nombreCompleto()}"></td>
+                    <td th:text="${p.documentoTexto()}"></td>
+                    <td th:text="${p.edadTexto()}"></td>
+                    <td><span class="chip rojo" th:if="${p.tieneAlergias()}" th:text="${p.alergiasTexto()}"></span></td>
+                    <td class="acc"><a class="btn chico primario" th:href="@{/hce/historia/{id}(id=${p.id})}"><i class="bi bi-journal-medical"></i> Abrir historia</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

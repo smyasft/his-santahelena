@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Catálogo INVIMA', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Catálogo oficial de medicamentos</h1>
+        <span class="chip"><i class="bi bi-patch-check"></i> INVIMA · datos.gov.co</span>
+        <div class="ruta">Consulta en línea del listado «Código Único de Medicamentos Vigentes» publicado por el INVIMA. Importe un medicamento para usarlo en fórmulas e inventario.</div>
+        <div class="acciones"><a class="btn" th:href="@{/farmacia/inventario}"><i class="bi bi-box-seam"></i> Inventario</a></div>
+    </div>
+
+    <div class="panel buscador-grande">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/farmacia/invima}" method="get">
+                <div class="campo"><label>Nombre comercial, principio activo, laboratorio o expediente</label>
+                    <input type="search" name="q" th:value="${q}" autofocus placeholder="Ej: losartán, acetaminofén, Tecnoquímicas…"></div>
+                <button class="btn primario" type="submit"><i class="bi bi-search"></i> Buscar en INVIMA</button>
+            </form>
+            <p class="ayuda" style="margin:10px 0 0">Solo se muestran registros <b>vigentes</b>, CUM <b>activos</b> y que no son muestra médica. El grupo farmacológico y el control especial se sugieren a partir del código ATC; confírmelos antes de importar.</p>
+        </div>
+    </div>
+
+    <th:block th:if="${buscado and #lists.isEmpty(resultados) and mensajeError == null}">
+        <div class="panel"><div th:replace="~{fragmentos :: vacio('Sin resultados vigentes para esa búsqueda')}"></div></div>
+    </th:block>
+
+    <div class="tarjetas-cum" th:if="${!#lists.isEmpty(resultados)}">
+        <div class="tarjeta-cum" th:each="r : ${resultados}" th:classappend="${r.enInventario} ? 'importado'">
+            <div class="tc-cab">
+                <div>
+                    <div class="tc-nombre" th:text="${r.producto}">Producto</div>
+                    <div class="tc-sub" th:text="${r.titular}">Titular</div>
+                </div>
+                <span class="chip verde" th:if="${r.enInventario}"><i class="bi bi-check2"></i> En inventario</span>
+            </div>
+            <div class="tc-datos">
+                <div><span>CUM</span><b th:text="${r.cum}"></b></div>
+                <div><span>Registro sanitario</span><b th:text="${r.registroSanitario}"></b></div>
+                <div><span>Forma / vía</span><b th:text="${r.formaFarmaceutica + ' · ' + r.via}"></b></div>
+                <div><span>ATC</span><b th:text="${r.atc}"></b></div>
+            </div>
+            <div class="tc-principio" th:text="${r.principiosTexto()}"></div>
+            <div class="tc-sub" th:text="${r.descripcionAtc}"></div>
+            <div class="tc-sub" th:if="${r.presentacion != null}" th:text="${r.presentacion}" style="margin-top:4px"></div>
+            <div class="tc-chips">
+                <span class="chip" th:text="${'Grupo sugerido: ' + r.grupoSugerido}"></span>
+                <span class="chip rojo" th:if="${r.controlSugerido}"><i class="bi bi-shield-lock"></i> Posible control especial</span>
+            </div>
+            <details th:unless="${r.enInventario}" class="tc-importar">
+                <summary class="btn chico primario"><i class="bi bi-cloud-download"></i> Importar al inventario</summary>
+                <form th:action="@{/farmacia/invima/importar}" method="post">
+                    <input type="hidden" name="expediente" th:value="${r.expediente}">
+                    <input type="hidden" name="consecutivo" th:value="${r.consecutivo}">
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Nombre en el HIS</label><input type="text" name="nombre" th:value="${r.nombreSugerido()}" required></div>
+                        <div class="campo"><label>Grupo farmacológico</label>
+                            <select name="grupo"><option th:each="g : ${grupos}" th:value="${g}" th:text="${g}" th:selected="${g == r.grupoSugerido}"></option></select></div>
+                        <div class="campo"><label>Stock mínimo</label><input type="number" name="stockMinimo" value="50" min="0" required></div>
+                        <div class="campo"><label>Precio de venta (COP)</label><input type="number" name="precio" min="0" step="10" required></div>
+                        <div class="campo" style="justify-content:flex-end"><label class="check"><input type="checkbox" name="controlEspecial" value="si" th:checked="${r.controlSugerido}"> Control especial</label></div>
+                    </div>
+                    <div style="text-align:right;margin-top:10px"><button class="btn exito" type="submit"><i class="bi bi-check2-circle"></i> Confirmar importación</button></div>
+                </form>
+            </details>
+        </div>
+    </div>
+    <p class="ayuda" th:if="${!#lists.isEmpty(resultados)}" style="margin-top:12px">Fuente: INVIMA – «Código Único de Medicamentos Vigentes», portal de datos abiertos del Estado colombiano (datos.gov.co).</p>
+</main>
+</body>
+</html>

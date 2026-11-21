@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Interconsulta', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina"><h1>Solicitud de interconsulta</h1></div>
+    <form th:action="@{/hce/interconsulta}" method="post">
+        <input type="hidden" name="pacienteId" th:value="${p.id}">
+        <input type="hidden" name="atencionId" th:value="${atencionId}">
+        <div class="panel" style="max-width:760px">
+            <div class="cab"><i class="bi bi-arrow-left-right"></i> Datos de la interconsulta</div>
+            <div class="cuerpo">
+                <div class="campos c2">
+                    <div class="campo"><label>Especialidad <span class="req">*</span></label><select name="especialidad"><option th:each="e : ${especialidades}" th:text="${e}"></option></select></div>
+                    <div class="campo"><label>Prioridad</label><select name="prioridad"><option>NORMAL</option><option>URGENTE</option></select></div>
+                    <div class="campo todo"><label>Motivo y pregunta al especialista <span class="req">*</span></label><textarea class="alto" name="motivo" required></textarea></div>
+                </div>
+            </div>
+            <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-send"></i> Enviar</button></div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Aviso', ~{::main})}">
+<body>
+<main>
+    <div class="panel" style="max-width:680px;margin:30px auto">
+        <div class="cab"><i class="bi bi-info-circle"></i> No es posible continuar</div>
+        <div class="cuerpo">
+            <div class="aviso alerta"><i class="bi bi-exclamation-triangle-fill"></i><div th:text="${mensaje}">Mensaje</div></div>
+            <a class="btn" href="javascript:history.back()"><i class="bi bi-arrow-left"></i> Volver</a>
+            <a class="btn primario" th:href="@{/}"><i class="bi bi-house"></i> Inicio</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

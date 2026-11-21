@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Pendientes de cama', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Pacientes pendientes de cama</h1><div class="ruta">Solo se permiten camas compatibles en servicio, sexo y aislamiento.</div></div>
+    <th:block th:if="${#lists.isEmpty(lista)}"><div class="panel"><div th:replace="~{fragmentos :: vacio('No hay órdenes de hospitalización pendientes')}"></div></div></th:block>
+    <div class="panel" th:each="a : ${lista}">
+        <div class="cab"><i class="bi bi-person"></i> <span th:text="${a.pacienteNombre}"></span>
+            <span class="der" th:text="${'Orden ' + #temporals.format(a.fechaIngreso, 'dd/MM HH:mm') + ' · ' + a.ordenadoPor}"></span></div>
+        <div class="cuerpo">
+            <div class="signos-mini" style="margin-bottom:10px">
+                <span th:text="${a.pacienteDocumento}"></span>
+                <span th:text="${'Sexo: ' + a.pacienteSexo}"></span>
+                <span th:text="${'Servicio: ' + a.servicio}"></span>
+                <span th:if="${a.requiereAislamiento}" style="color:var(--rojo);font-weight:700">Requiere aislamiento</span>
+                <span th:text="${'Dx: ' + a.motivo}"></span>
+            </div>
+            <form th:action="@{/camas/asignar}" method="post" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+                <input type="hidden" name="admisionId" th:value="${a.id}">
+                <div class="campo" style="flex:1 1 320px"><label>Cama</label>
+                    <select name="camaId" required>
+                        <option value="">Seleccione una cama libre</option>
+                        <option th:each="o : ${opciones.get(a.id)}" th:value="${o.cama.id}" th:disabled="${o.problema != null}"
+                                th:text="${o.cama.codigo + ' · ' + o.cama.servicio + ' · ' + o.cama.restriccionTexto() + (o.problema != null ? ' — ' + o.problema : ' ✓ compatible')}"></option>
+                    </select>
+                </div>
+                <button class="btn primario" type="submit"><i class="bi bi-box-arrow-in-down-right"></i> Asignar cama</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

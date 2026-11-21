@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Resultados validados', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Resultados validados</h1></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Validado</th><th>Muestra</th><th>Paciente</th><th>Exámenes</th><th>Validó</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="o : ${lista}" th:classappend="${o.tieneCriticos()} ? 'fila-alerta'">
+                    <td th:text="${#temporals.format(o.validadaEn, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${o.codigoMuestra}"></td>
+                    <td th:text="${o.pacienteNombre}"></td>
+                    <td th:text="${o.examenesTexto()}"></td>
+                    <td class="sub" th:text="${o.validadaPor}"></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/laboratorio/orden/{id}(id=${o.id})}">Ver</a> <a class="btn chico" th:href="@{/laboratorio/orden/{id}/imprimir(id=${o.id})}"><i class="bi bi-printer"></i></a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('Sin resultados validados')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

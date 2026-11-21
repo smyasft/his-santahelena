@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Acceso denegado', ~{::main})}">
+<body>
+<main>
+    <div class="panel" style="max-width:640px;margin:30px auto">
+        <div class="cab"><i class="bi bi-slash-circle"></i> Acceso denegado (403)</div>
+        <div class="cuerpo">
+            <p th:if="${modulo != null}">Su rol no tiene habilitado el módulo <b th:text="${modulo}">módulo</b>.</p>
+            <p th:if="${modulo == null}">No tiene permisos para realizar esta acción.</p>
+            <p class="ayuda">El intento quedó registrado en la bitácora de auditoría. Si necesita acceso, solicítelo al administrador del sistema.</p>
+            <a class="btn primario" th:href="@{/}"><i class="bi bi-house"></i> Ir al inicio</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

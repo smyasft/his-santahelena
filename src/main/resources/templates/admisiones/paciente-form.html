@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina(${p.id == null ? 'Registrar paciente' : 'Editar paciente'}, ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${p.id == null ? 'Registro de paciente' : 'Actualizar datos · ' + p.numeroHistoria}">Paciente</h1>
+        <div class="ruta">Los campos con <span class="req">*</span> son obligatorios. El sistema impide historias duplicadas por documento.</div>
+    </div>
+    <form th:action="@{/admisiones/paciente/guardar}" method="post" autocomplete="off">
+        <input type="hidden" name="id" th:value="${p.id}">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-person-vcard"></i> Identificación</div>
+            <div class="cuerpo">
+                <div class="campos">
+                    <div class="campo"><label>Tipo de documento <span class="req">*</span></label>
+                        <select name="tipoDocumento">
+                            <option th:each="t : ${ {'CC','TI','RC','CE','PA','PPT','NN'} }" th:value="${t}" th:text="${t}" th:selected="${p.tipoDocumento == t}"></option>
+                        </select>
+                    </div>
+                    <div class="campo"><label>Número <span class="req">*</span></label><input type="text" name="numeroDocumento" th:value="${p.numeroDocumento}" required></div>
+                    <div class="campo"><label>Fecha de nacimiento <span class="req">*</span></label><input type="date" name="fechaNacimiento" th:value="${p.fechaNacimiento}" required></div>
+                    <div class="campo"><label>Sexo biológico <span class="req">*</span></label>
+                        <select name="sexo" required>
+                            <option value="">Seleccione</option>
+                            <option value="F" th:selected="${p.sexo == 'F'}">Femenino</option>
+                            <option value="M" th:selected="${p.sexo == 'M'}">Masculino</option>
+                            <option value="I" th:selected="${p.sexo == 'I'}">Indeterminado</option>
+                        </select>
+                    </div>
+                    <div class="campo s2"><label>Nombres <span class="req">*</span></label><input type="text" name="nombres" th:value="${p.nombres}" required></div>
+                    <div class="campo s2"><label>Apellidos <span class="req">*</span></label><input type="text" name="apellidos" th:value="${p.apellidos}" required></div>
+                </div>
+            </div>
+        </div>
+        <div class="grid g2">
+            <div class="panel">
+                <div class="cab"><i class="bi bi-shield-plus"></i> Aseguramiento</div>
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo s2"><label>EPS / entidad pagadora</label>
+                            <select name="epsId">
+                                <option value="">Particular (sin EPS)</option>
+                                <option th:each="e : ${epsLista}" th:value="${e.id}" th:text="${e.nombre + ' · ' + e.tipo}" th:selected="${p.epsId == e.id}"></option>
+                            </select>
+                        </div>
+                        <div class="campo"><label>Régimen</label>
+                            <select name="regimen">
+                                <option th:each="r : ${ {'CONTRIBUTIVO','SUBSIDIADO','ESPECIAL','PARTICULAR'} }" th:value="${r}" th:text="${r}" th:selected="${p.regimen == r}"></option>
+                            </select>
+                        </div>
+                        <div class="campo"><label>Nivel / categoría</label><input type="text" name="nivel" th:value="${p.nivel}" placeholder="Categoría A, Nivel 1…"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-telephone"></i> Contacto</div>
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo"><label>Teléfono</label><input type="tel" name="telefono" th:value="${p.telefono}"></div>
+                        <div class="campo"><label>Correo</label><input type="email" name="email" th:value="${p.email}"></div>
+                        <div class="campo"><label>Dirección</label><input type="text" name="direccion" th:value="${p.direccion}"></div>
+                        <div class="campo"><label>Municipio</label><input type="text" name="municipio" th:value="${p.municipio}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-people"></i> Acudiente / acompañante <span class="der ayuda">Obligatorio para menores de edad</span></div>
+                <div class="cuerpo">
+                    <div class="campos c3">
+                        <div class="campo"><label>Nombre</label><input type="text" name="acompananteNombre" th:value="${p.acompananteNombre}"></div>
+                        <div class="campo"><label>Parentesco</label><input type="text" name="acompananteParentesco" th:value="${p.acompananteParentesco}"></div>
+                        <div class="campo"><label>Teléfono</label><input type="tel" name="acompananteTelefono" th:value="${p.acompananteTelefono}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-exclamation-triangle"></i> Alergias</div>
+                <div class="cuerpo">
+                    <div class="campo"><label>Alergias conocidas (separadas por coma)</label>
+                        <input type="text" name="alergias" th:value="${#strings.listJoin(p.alergias, ', ')}" placeholder="Ej: Penicilina, AINE, Sulfas"></div>
+                    <p class="ayuda">Se muestran en rojo en el encabezado del paciente y generan alertas al prescribir.</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cuerpo" th:if="${p.id == null}">
+                <label class="check"><input type="checkbox" name="consentimiento" value="si"> El paciente autoriza el tratamiento de sus datos personales y de salud conforme a la Ley 1581 de 2012 y la política de la institución. <span class="req">*</span></label>
+            </div>
+            <div class="pie">
+                <a class="btn" th:href="@{${p.id == null ? '/admisiones' : '/admisiones/paciente/' + p.id}}">Cancelar</a>
+                <button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar paciente</button>
+            </div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

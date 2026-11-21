@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Hospitalización', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1 th:text="${'Hospitalización · cama ' + (a.camaCodigo != null ? a.camaCodigo : '—')}">Hospitalización</h1>
+        <span th:replace="~{fragmentos :: estado(${a.estado})}"></span>
+        <div class="acciones"><a class="btn" th:href="@{/camas}"><i class="bi bi-arrow-left"></i> Mapa</a></div>
+    </div>
+    <div class="grid g2">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-box-arrow-right"></i> Proceso de egreso</div>
+            <div class="cuerpo">
+                <table class="tabla">
+                    <tr><td>1. Orden médica de egreso</td><td><span class="estado" th:classappend="${a.ordenEgreso ? 'e-VALIDADA' : 'e-PENDIENTE'}" th:text="${a.ordenEgreso ? 'Sí · ' + a.ordenEgresoPor : 'Pendiente'}"></span></td></tr>
+                    <tr><td>2. Estancia liquidada</td><td><span class="estado" th:classappend="${a.estanciaLiquidada ? 'e-VALIDADA' : 'e-PENDIENTE'}" th:text="${a.estanciaLiquidada ? 'Sí' : dias + ' día(s) por liquidar'}"></span></td></tr>
+                    <tr><td>3. Paz y salvo de facturación</td><td><span class="estado" th:classappend="${pys != null ? 'e-VALIDADA' : 'e-PENDIENTE'}" th:text="${pys != null ? pys.numero : 'Pendiente'}"></span></td></tr>
+                </table>
+            </div>
+            <div class="pie" th:if="${a.estado == 'EN_CAMA'}">
+                <form th:if="${!a.estanciaLiquidada}" th:action="@{/camas/admision/{id}/liquidar(id=${a.id})}" method="post" class="en-linea">
+                    <button class="btn" type="submit" th:disabled="${!a.ordenEgreso}"><i class="bi bi-calculator"></i> Liquidar estancia</button>
+                </form>
+                <form th:action="@{/camas/admision/{id}/egresar(id=${a.id})}" method="post" class="en-linea" data-confirmar="¿Registrar el egreso del paciente? La cama pasará a limpieza.">
+                    <button class="btn exito" type="submit" th:disabled="${!a.ordenEgreso or pys == null}"><i class="bi bi-door-open"></i> Registrar egreso</button>
+                </form>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-arrow-left-right"></i> Traslado</div>
+            <form th:if="${a.estado == 'EN_CAMA'}" th:action="@{/camas/admision/{id}/traslado(id=${a.id})}" method="post">
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Cama destino</label>
+                            <select name="camaId" required><option value="">Seleccione</option>
+                                <option th:each="o : ${opciones}" th:value="${o.cama.id}" th:disabled="${o.problema != null}" th:text="${o.cama.codigo + ' · ' + o.cama.servicio + ' · ' + o.cama.restriccionTexto() + (o.problema != null ? ' — ' + o.problema : '')}"></option>
+                            </select></div>
+                        <div class="campo todo"><label>Motivo</label><input type="text" name="motivo" required></div>
+                    </div>
+                </div>
+                <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-arrow-left-right"></i> Trasladar</button></div>
+            </form>
+            <div class="cuerpo sin" th:if="${!#lists.isEmpty(a.traslados)}">
+                <table class="tabla"><thead><tr><th>Fecha</th><th>De</th><th>A</th><th>Motivo</th></tr></thead><tbody>
+                <tr th:each="t : ${a.traslados}"><td th:text="${#temporals.format(t.fecha, 'dd/MM HH:mm')}"></td><td th:text="${t.deCama}"></td><td th:text="${t.aCama}"></td><td th:text="${t.motivo}"></td></tr>
+                </tbody></table>
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-info-circle"></i> Datos del ingreso</div>
+        <div class="cuerpo">
+            <div class="signos-mini">
+                <span th:text="${'Ingreso: ' + #temporals.format(a.fechaIngreso, 'dd/MM/yyyy HH:mm')}"></span>
+                <span th:text="${'Servicio: ' + a.servicio}"></span>
+                <span th:text="${'Ordenó: ' + a.ordenadoPor}"></span>
+                <span th:text="${'Diagnóstico: ' + a.motivo}"></span>
+                <span th:text="${'Días de estancia: ' + dias}"></span>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

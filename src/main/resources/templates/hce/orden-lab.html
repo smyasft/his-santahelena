@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Orden de laboratorio', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina"><h1>Orden de laboratorio</h1></div>
+    <form th:action="@{/hce/orden-lab}" method="post">
+        <input type="hidden" name="pacienteId" th:value="${p.id}">
+        <input type="hidden" name="atencionId" th:value="${atencionId}">
+        <div class="grid g-8-4">
+            <div class="panel">
+                <div class="cab"><i class="bi bi-list-check"></i> Exámenes</div>
+                <div class="cuerpo sin">
+                    <table class="tabla">
+                        <thead><tr><th></th><th>CUPS</th><th>Examen</th><th>Muestra</th><th>Analitos</th></tr></thead>
+                        <tbody>
+                        <tr th:each="e : ${examenes}">
+                            <td><input type="checkbox" name="examenes" th:value="${e.codigo}" th:id="${'ex' + e.codigo}"></td>
+                            <td th:text="${e.codigo}"></td>
+                            <td><label th:for="${'ex' + e.codigo}" style="text-transform:none;font-size:13px;color:var(--texto);letter-spacing:0" th:text="${e.nombre}"></label></td>
+                            <td class="sub" th:text="${e.muestra}"></td>
+                            <td class="sub" th:text="${#lists.size(e.analitos)}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-sliders"></i> Datos de la orden</div>
+                <div class="cuerpo">
+                    <div class="campo"><label>Prioridad</label><select name="prioridad"><option>RUTINA</option><option>URGENTE</option></select></div>
+                    <div class="campo" style="margin-top:10px"><label>Observaciones / datos clínicos</label><textarea name="observaciones"></textarea></div>
+                </div>
+                <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-send"></i> Enviar orden</button></div>
+            </div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

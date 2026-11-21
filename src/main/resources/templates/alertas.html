@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Alertas', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Alertas de mi rol</h1>
+        <div class="acciones">
+            <form th:action="@{/alertas/leer-todas}" method="post"><button class="btn" type="submit"><i class="bi bi-check2-all"></i> Marcar todas como leídas</button></form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo sin">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha</th><th>Severidad</th><th>Tipo</th><th>Paciente</th><th>Mensaje</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${lista}" th:classappend="${!a.leida and a.severidad == 'ALTA'} ? 'fila-alerta'">
+                    <td th:text="${#temporals.format(a.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td><span class="estado" th:classappend="${a.severidad == 'ALTA' ? 'e-RECHAZADA' : 'e-RECIBIDA'}" th:text="${a.severidad}"></span></td>
+                    <td th:text="${a.tipo}"></td>
+                    <td th:text="${a.pacienteNombre != null ? a.pacienteNombre : '—'}"></td>
+                    <td th:text="${a.mensaje}"></td>
+                    <td><span th:if="${a.leida}" class="sub" th:text="${'Leída por ' + a.leidaPor}"></span><b th:if="${!a.leida}">Nueva</b></td>
+                    <td class="acc">
+                        <form th:action="@{/alertas/{id}/leer(id=${a.id})}" method="post" class="en-linea">
+                            <button class="btn chico" type="submit"><i class="bi bi-box-arrow-up-right"></i> Abrir</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay alertas')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

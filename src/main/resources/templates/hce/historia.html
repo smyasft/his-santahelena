@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Historia clínica', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1>Historia clínica</h1>
+        <span class="chip" th:if="${activa != null}" th:text="${activa.tipo + ' · ' + #strings.replace(activa.estado, '_', ' ') + (activa.camaCodigo != null ? ' · Cama ' + activa.camaCodigo : '')}"></span>
+        <div class="acciones">
+            <form th:action="@{/hce/atencion/nueva}" method="post" class="en-linea">
+                <input type="hidden" name="pacienteId" th:value="${p.id}">
+                <input type="hidden" name="admisionId" th:value="${activa != null ? activa.id : ''}">
+                <input type="hidden" name="tipo" th:value="${activa != null and activa.tipo == 'HOSPITALIZACION' ? 'EVOLUCION' : (yo.tieneRol('ESPECIALISTA') ? 'ESPECIALIDAD' : 'CONSULTA')}">
+                <button class="btn primario" type="submit"><i class="bi bi-plus-circle"></i> Nuevo registro</button>
+            </form>
+            <a class="btn" th:href="@{/hce/prescripcion/nueva(pacienteId=${p.id})}"><i class="bi bi-prescription2"></i> Fórmula</a>
+            <a class="btn" th:href="@{/hce/orden-lab/nueva(pacienteId=${p.id})}"><i class="bi bi-eyedropper"></i> Laboratorio</a>
+            <a class="btn" th:href="@{/hce/interconsulta/nueva(pacienteId=${p.id})}"><i class="bi bi-arrow-left-right"></i> Interconsulta</a>
+        </div>
+    </div>
+    <div class="grid g-7-5">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-clock-history"></i> Línea de tiempo de atenciones</div>
+            <div class="cuerpo">
+                <div class="linea-tiempo" th:if="${!#lists.isEmpty(atenciones)}">
+                    <div class="evento" th:each="a : ${atenciones}" th:classappend="${!a.firmada} ? 'borrador'">
+                        <div class="cab-ev">
+                            <b th:text="${#temporals.format(a.fecha, 'dd/MM/yyyy HH:mm')}"></b>
+                            <span class="chip" th:text="${a.tipo}"></span>
+                            <span class="chip gris" th:unless="${a.firmada}">Borrador</span>
+                            <span th:text="${a.profesionalNombre + ' · ' + a.especialidad}"></span>
+                            <a th:href="@{/hce/atencion/{id}(id=${a.id})}" style="margin-left:auto">Ver registro <i class="bi bi-chevron-right"></i></a>
+                        </div>
+                        <div class="res"><b th:text="${a.diagnosticoPrincipal()}"></b></div>
+                        <div class="res" th:text="${a.motivoConsulta}"></div>
+                        <div class="res" th:if="${a.aclaraA != null}"><i class="bi bi-link-45deg"></i> Nota aclaratoria de un registro anterior</div>
+                    </div>
+                </div>
+                <th:block th:if="${#lists.isEmpty(atenciones)}"><div th:replace="~{fragmentos :: vacio('Sin atenciones registradas')}"></div></th:block>
+            </div>
+        </div>
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-heart-pulse"></i> Signos vitales recientes</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(signos)}">
+                        <thead><tr><th>Fecha</th><th>TA</th><th>FC</th><th>FR</th><th>T°</th><th>Sat</th></tr></thead>
+                        <tbody>
+                        <tr th:each="s, st : ${signos}" th:if="${st.index < 6}" th:classappend="${!#lists.isEmpty(s.alertas)} ? 'fila-alerta'">
+                            <td th:text="${#temporals.format(s.fecha, 'dd/MM HH:mm')}"></td><td th:text="${s.ta()}"></td><td th:text="${s.fc}"></td>
+                            <td th:text="${s.fr}"></td><td th:text="${s.temperatura}"></td><td th:text="${s.saturacion}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(signos)}"><div th:replace="~{fragmentos :: vacio('Sin signos')}"></div></th:block>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-eyedropper"></i> Laboratorio</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(ordenes)}">
+                        <tbody>
+                        <tr th:each="o : ${ordenes}" th:classappend="${o.tieneCriticos()} ? 'fila-alerta'">
+                            <td><b th:text="${o.examenesTexto()}"></b><div class="sub" th:text="${#temporals.format(o.fecha, 'dd/MM/yyyy HH:mm') + ' · ' + o.prioridad}"></div>
+                                <div th:if="${o.estado == 'VALIDADA'}">
+                                    <th:block th:each="e : ${o.examenes}"><span th:each="r : ${e.resultados}" class="chip" th:classappend="${r.critico ? 'rojo' : (r.fueraRango ? '' : 'verde')}"
+                                          th:text="${r.analito + ' ' + r.valor + ' ' + r.unidad}" style="margin:2px 2px 0 0"></span></th:block>
+                                </div>
+                                <div class="sub" th:if="${o.estado == 'RECHAZADA'}" th:text="${'Rechazada: ' + o.motivoRechazo}"></div></td>
+                            <td><span th:replace="~{fragmentos :: estado(${o.estado})}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(ordenes)}"><div th:replace="~{fragmentos :: vacio('Sin órdenes')}"></div></th:block>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-capsule"></i> Fórmulas</div>
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla" th:if="${!#lists.isEmpty(prescripciones)}">
+                        <tbody>
+                        <tr th:each="f : ${prescripciones}">
+                            <td><div th:each="it : ${f.items}"><b th:text="${it.nombre}"></b> <span class="sub" th:text="${it.dosis + ' ' + it.frecuencia}"></span></div>
+                                <div class="sub" th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy') + ' · ' + f.medicoNombre}"></div>
+                                <div class="sub" style="color:var(--rojo)" th:if="${f.validacionFarmacia == 'OBSERVADA'}" th:text="${'Observación de farmacia: ' + f.observacionFarmacia}"></div></td>
+                            <td><span th:replace="~{fragmentos :: estado(${f.estado})}"></span></td>
+                            <td class="acc"><a class="btn chico" th:href="@{/hce/formula/{id}/imprimir(id=${f.id})}"><i class="bi bi-printer"></i></a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <th:block th:if="${#lists.isEmpty(prescripciones)}"><div th:replace="~{fragmentos :: vacio('Sin fórmulas')}"></div></th:block>
+                </div>
+            </div>
+            <div class="panel" th:if="${!#lists.isEmpty(interconsultas)}">
+                <div class="cab"><i class="bi bi-arrow-left-right"></i> Interconsultas</div>
+                <div class="cuerpo sin">
+                    <table class="tabla"><tbody>
+                    <tr th:each="i : ${interconsultas}">
+                        <td><b th:text="${i.especialidad}"></b><div class="sub" th:text="${i.motivo}"></div></td>
+                        <td><span th:replace="~{fragmentos :: estado(${i.estado})}"></span></td>
+                    </tr>
+                    </tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Dispensación', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1>Fórmula médica</h1>
+        <span th:replace="~{fragmentos :: estado(${pr.estado})}"></span>
+        <span th:replace="~{fragmentos :: estado(${pr.validacionFarmacia})}"></span>
+        <div class="acciones"><a class="btn" th:href="@{/farmacia}"><i class="bi bi-arrow-left"></i> Pendientes</a></div>
+    </div>
+    <div class="grid g-8-4">
+        <div>
+            <div class="aviso error" th:if="${!#lists.isEmpty(pr.alertas)}"><i class="bi bi-exclamation-octagon-fill"></i>
+                <div><b>Alertas aceptadas por el médico:</b><ul><li th:each="x : ${pr.alertas}" th:text="${x}"></li></ul>
+                    <div th:text="${'Justificación: ' + pr.justificacionAlertas}"></div></div></div>
+            <form th:action="@{/farmacia/prescripcion/{id}/dispensar(id=${pr.id})}" method="post">
+                <div class="panel">
+                    <div class="cab"><i class="bi bi-capsule-pill"></i> Medicamentos <span class="der" th:text="${'Vence ' + #temporals.format(pr.venceEn, 'dd/MM/yyyy')}"></span></div>
+                    <div class="cuerpo sin tabla-cont">
+                        <table class="tabla">
+                            <thead><tr><th>Medicamento</th><th>Posología</th><th class="num">Ordenado</th><th class="num">Entregado</th><th class="num">Stock vigente</th><th style="width:100px">Dispensar</th></tr></thead>
+                            <tbody>
+                            <tr th:each="it, st : ${pr.items}" th:classappend="${stock.get(it.medicamentoId) < it.pendiente()} ? 'fila-aviso'">
+                                <td><b th:text="${it.nombre}"></b> <span class="chip rojo" th:if="${it.controlEspecial}">Control especial</span>
+                                    <div class="sub" th:text="${'CUM ' + it.codigoCum}"></div>
+                                    <div class="sub" th:if="${it.justificacionControl != null}" th:text="${'Justificación: ' + it.justificacionControl}"></div></td>
+                                <td th:text="${it.dosis + ' · ' + it.via + ' · ' + it.frecuencia + ' · ' + it.dias + ' días'}"></td>
+                                <td class="num" th:text="${it.cantidad}"></td>
+                                <td class="num" th:text="${it.cantidadDispensada}"></td>
+                                <td class="num" th:text="${stock.get(it.medicamentoId)}"></td>
+                                <td><input type="number" min="0" th:max="${it.pendiente()}" th:name="${'q_' + st.index}" th:value="${it.pendiente() <= stock.get(it.medicamentoId) ? it.pendiente() : stock.get(it.medicamentoId)}" th:disabled="${it.pendiente() == 0}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pie" th:if="${pr.estado == 'ACTIVA'}">
+                        <span class="ayuda" style="margin-right:auto">Se descuenta por lote con vencimiento más próximo (FEFO) y se carga a la cuenta del paciente.</span>
+                        <button class="btn exito" type="submit" th:disabled="${pr.validacionFarmacia != 'VALIDADA'}"><i class="bi bi-bag-check"></i> Dispensar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-shield-check"></i> Validación farmacéutica</div>
+                <div class="cuerpo">
+                    <p th:if="${pr.validadaPor != null}" class="ayuda" style="margin-top:0" th:text="${pr.validacionFarmacia + ' por ' + pr.validadaPor + ' · ' + #temporals.format(pr.validadaEn, 'dd/MM HH:mm')}"></p>
+                    <p th:if="${pr.observacionFarmacia != null}" th:text="${'Observación: ' + pr.observacionFarmacia}"></p>
+                    <form th:if="${pr.estado == 'ACTIVA'}" th:action="@{/farmacia/prescripcion/{id}/validar(id=${pr.id})}" method="post">
+                        <div class="campo"><label>Observación para el médico</label><textarea name="observacion"></textarea></div>
+                        <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+                            <button class="btn peligro" type="submit" name="decision" value="OBSERVADA">Observar</button>
+                            <button class="btn exito" type="submit" name="decision" value="VALIDADA"><i class="bi bi-check2"></i> Validar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-person-badge"></i> Prescriptor</div>
+                <div class="cuerpo">
+                    <b th:text="${pr.medicoNombre}"></b><div class="sub" th:text="${pr.medicoRegistro}"></div>
+                    <div class="sub" th:text="${'Emitida ' + #temporals.format(pr.fecha, 'dd/MM/yyyy HH:mm')}"></div>
+                    <div class="hash" th:text="${'Firma: ' + pr.hashFirma}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

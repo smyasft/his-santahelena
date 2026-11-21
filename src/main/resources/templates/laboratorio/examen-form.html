@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Examen', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1 th:text="${e.id == null ? 'Nuevo examen' : 'Editar ' + e.nombre}">Examen</h1></div>
+    <form th:action="@{/laboratorio/examenes/guardar}" method="post">
+        <input type="hidden" name="id" th:value="${e.id}">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-info-circle"></i> Datos</div>
+            <div class="cuerpo">
+                <div class="campos">
+                    <div class="campo"><label>Código CUPS</label><input type="text" name="codigo" th:value="${e.codigo}" required></div>
+                    <div class="campo s2"><label>Nombre</label><input type="text" name="nombre" th:value="${e.nombre}" required></div>
+                    <div class="campo"><label>Muestra</label><input type="text" name="muestra" th:value="${e.muestra}"></div>
+                    <div class="campo"><label>Precio base</label><input type="number" name="precio" th:value="${e.precio}"></div>
+                    <div class="campo"><label class="check" style="margin-top:22px"><input type="checkbox" name="activo" value="si" th:checked="${e.id == null or e.activo}"> Activo</label></div>
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-rulers"></i> Analitos y rangos de referencia</div>
+            <div class="cuerpo sin">
+                <table class="tabla">
+                    <thead><tr><th>Analito</th><th>Unidad</th><th>Mín. ref.</th><th>Máx. ref.</th><th>Crítico bajo</th><th>Crítico alto</th></tr></thead>
+                    <tbody>
+                    <tr th:each="i : ${filas}" th:with="a=${i < #lists.size(e.analitos) ? e.analitos[i] : null}">
+                        <td><input type="text" name="an_nombre" th:value="${a != null ? a.nombre : ''}"></td>
+                        <td><input type="text" name="an_unidad" th:value="${a != null ? a.unidad : ''}"></td>
+                        <td><input type="number" step="any" name="an_min" th:value="${a != null ? a.min : ''}"></td>
+                        <td><input type="number" step="any" name="an_max" th:value="${a != null ? a.max : ''}"></td>
+                        <td><input type="number" step="any" name="an_cmin" th:value="${a != null ? a.criticoMin : ''}"></td>
+                        <td><input type="number" step="any" name="an_cmax" th:value="${a != null ? a.criticoMax : ''}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pie"><a class="btn" th:href="@{/laboratorio/examenes}">Cancelar</a><button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar</button></div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

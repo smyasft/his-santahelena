@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Cola de triaje', ~{::main})}">
+<body>
+<main data-recargar="45">
+    <div class="titulo-pagina">
+        <h1>Urgencias · cola de triaje</h1>
+        <div class="ruta">Se actualiza cada 45 segundos. Orden: sin clasificar, luego por prioridad y hora de llegada.</div>
+        <div class="acciones leyenda">
+            <span><i style="background:var(--t1)"></i>I Inmediata</span><span><i style="background:var(--t2)"></i>II ≤30 min</span>
+            <span><i style="background:var(--t3)"></i>III ≤2 h</span><span><i style="background:var(--t4)"></i>IV ≤4 h</span><span><i style="background:var(--t5)"></i>V No urgente</span>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Triaje</th><th>Espera</th><th>Paciente</th><th>Edad / sexo</th><th>Motivo de consulta</th><th>EPS</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr class="cola-fila" th:each="a : ${lista}" th:classappend="${a.triajeNivel == null} ? 'fila-aviso'">
+                    <td><span th:replace="~{fragmentos :: triaje(${a.triajeNivel})}"></span></td>
+                    <td><span class="espera" th:attr="data-desde=${#temporals.format(a.fechaIngreso, 'yyyy-MM-dd''T''HH:mm:ss')},data-limite=${a.triajeNivel == null ? 15 : (a.triajeNivel == 1 ? 1 : (a.triajeNivel == 2 ? 30 : (a.triajeNivel == 3 ? 120 : 240)))}">—</span>
+                        <div class="sub" th:text="${'Llegó ' + #temporals.format(a.fechaIngreso, 'HH:mm')}"></div></td>
+                    <td><b th:text="${a.pacienteNombre}"></b><div class="sub" th:text="${a.pacienteDocumento}"></div></td>
+                    <td th:text="${a.pacienteSexo}"></td>
+                    <td th:text="${a.motivo}"></td>
+                    <td class="sub" th:text="${a.epsNombre}"></td>
+                    <td><span th:replace="~{fragmentos :: estado(${a.estado})}"></span></td>
+                    <td class="acc">
+                        <a th:if="${a.estado == 'EN_ESPERA_TRIAJE'}" class="btn chico primario" th:href="@{/enfermeria/triaje/{id}(id=${a.id})}"><i class="bi bi-clipboard2-pulse"></i> Clasificar</a>
+                        <a th:if="${a.estado == 'TRIADO'}" class="btn chico" th:href="@{/enfermeria/triaje/{id}(id=${a.id})}">Reclasificar</a>
+                        <a class="btn chico" th:href="@{/enfermeria/paciente/{id}(id=${a.pacienteId})}"><i class="bi bi-heart-pulse"></i> Signos</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay pacientes en urgencias')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

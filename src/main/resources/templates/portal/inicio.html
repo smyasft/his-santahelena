@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Portal del paciente', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${'Hola, ' + p.nombres}">Hola</h1>
+        <div class="ruta" th:text="${'Historia ' + p.numeroHistoria + ' · ' + p.epsNombre}"></div>
+    </div>
+    <div class="grid g3">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-calendar-check"></i> Próxima cita</div>
+            <div class="cuerpo">
+                <div th:if="${proxima != null}">
+                    <div style="font-size:22px;font-weight:700;color:var(--azul-800)" th:text="${#temporals.format(proxima.fechaHora, 'dd/MM/yyyy')}"></div>
+                    <div style="font-size:16px" th:text="${#temporals.format(proxima.fechaHora, 'EEEE HH:mm')}"></div>
+                    <p th:text="${proxima.profesionalNombre + ' · ' + proxima.especialidad}"></p>
+                    <p class="ayuda" th:text="${proxima.sede + ' · ' + proxima.consultorio}"></p>
+                </div>
+                <p th:if="${proxima == null}" class="ayuda">No tiene citas pendientes.</p>
+                <a class="btn primario" th:href="@{/portal/citas}"><i class="bi bi-calendar-plus"></i> Agendar o gestionar citas</a>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-capsule"></i> Fórmulas vigentes</div>
+            <div class="cuerpo sin">
+                <table class="tabla" th:if="${!#lists.isEmpty(formulas)}">
+                    <tbody>
+                    <tr th:each="f : ${formulas}">
+                        <td><b th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy')}"></b><div class="sub" th:text="${#lists.size(f.items) + ' medicamento(s) · vence ' + #temporals.format(f.venceEn, 'dd/MM/yyyy')}"></div></td>
+                        <td class="acc"><a class="btn chico" th:href="@{/portal/formulas/{id}(id=${f.id})}"><i class="bi bi-download"></i> Ver</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(formulas)}"><div th:replace="~{fragmentos :: vacio('Sin fórmulas vigentes')}"></div></th:block>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-clipboard2-pulse"></i> Resultados recientes</div>
+            <div class="cuerpo sin">
+                <table class="tabla" th:if="${!#lists.isEmpty(resultados)}">
+                    <tbody>
+                    <tr th:each="o : ${resultados}">
+                        <td><b th:text="${o.examenesTexto()}"></b><div class="sub" th:text="${'Validado ' + #temporals.format(o.validadaEn, 'dd/MM/yyyy')}"></div></td>
+                        <td class="acc"><a class="btn chico" th:href="@{/portal/resultados/{id}(id=${o.id})}"><i class="bi bi-file-earmark-pdf"></i> Ver</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(resultados)}"><div th:replace="~{fragmentos :: vacio('Sin resultados publicados')}"></div></th:block>
+            </div>
+        </div>
+    </div>
+    <div class="aviso info"><i class="bi bi-shield-check"></i><div>Sus datos están protegidos. Solo usted puede ver esta información y cada consulta queda registrada.</div></div>
+</main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Etiqueta de muestra</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/his.css}">
+    <style>@media print { @page { size: 70mm 38mm; margin: 0; } }</style></head>
+<body class="doc">
+<div th:replace="~{fragmentos :: barraDoc('/laboratorio')}"></div>
+<div class="hoja etiqueta">
+    <div style="font-weight:700" th:text="${o.pacienteNombre}"></div>
+    <div th:text="${o.pacienteDocumento + ' · ' + #temporals.format(o.recibidaEn, 'dd/MM/yyyy HH:mm')}"></div>
+    <div th:utext="${barras}" style="margin:3px 0"></div>
+    <div style="display:flex;justify-content:space-between"><b th:text="${o.codigoMuestra}"></b><span th:text="${o.prioridad}"></span></div>
+    <div th:text="${o.examenesTexto()}" style="font-size:9px"></div>
+</div>
+<script th:src="@{/js/his.js}"></script>
+</body>
+</html>

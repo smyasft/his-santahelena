@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Citas', ~{::main})}">
+<body>
+<main>
+    <th:block th:if="${paciente != null}"><div th:replace="~{fragmentos :: banner(${paciente})}"></div></th:block>
+    <div class="titulo-pagina">
+        <h1>Agenda de citas</h1>
+        <div class="ruta" th:if="${paciente == null}">Para asignar una cita, busque el paciente y use «Asignar cita» desde su ficha.</div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/admisiones/citas}" method="get">
+                <input type="hidden" name="pacienteId" th:if="${paciente != null}" th:value="${paciente.id}">
+                <div class="campo"><label>Profesional</label>
+                    <select name="agendaId">
+                        <option th:each="ag : ${agendas}" th:value="${ag.id}" th:text="${ag.profesionalNombre + ' · ' + ag.especialidad}" th:selected="${agenda != null and agenda.id == ag.id}"></option>
+                    </select>
+                </div>
+                <div class="campo corto"><label>Fecha</label><input type="date" name="fecha" th:value="${fecha}"></div>
+                <button class="btn primario" type="submit"><i class="bi bi-search"></i> Ver disponibilidad</button>
+            </form>
+        </div>
+    </div>
+    <div class="grid g2" th:if="${agenda != null}">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-clock"></i> Franjas libres <span class="der" th:text="${#temporals.format(fecha, 'EEEE dd/MM/yyyy')}"></span></div>
+            <div class="cuerpo">
+                <p class="ayuda" style="margin-top:0" th:text="${agenda.sede + ' · ' + agenda.consultorio + ' · Atiende: ' + agenda.diasTexto() + ' · ' + agenda.duracionMinutos + ' min'}"></p>
+                <form th:if="${paciente != null and !#lists.isEmpty(franjas)}" th:action="@{/admisiones/citas/asignar}" method="post">
+                    <input type="hidden" name="pacienteId" th:value="${paciente.id}">
+                    <input type="hidden" name="agendaId" th:value="${agenda.id}">
+                    <div class="campo" style="margin-bottom:10px"><label>Tipo de cita</label>
+                        <select name="tipo"><option>Primera vez</option><option>Control</option><option>Resultados</option></select>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                        <button class="btn" type="submit" name="fechaHora" th:each="t : ${franjas}" th:value="${t}" th:text="${#temporals.format(t, 'HH:mm')}"
+                                th:attr="data-confirmar=${'¿Asignar la cita de las ' + #temporals.format(t, 'HH:mm') + ' a ' + paciente.nombreCompleto() + '?'}">08:00</button>
+                    </div>
+                </form>
+                <div th:if="${paciente == null and !#lists.isEmpty(franjas)}" style="display:flex;flex-wrap:wrap;gap:6px">
+                    <span class="chip" th:each="t : ${franjas}" th:text="${#temporals.format(t, 'HH:mm')}"></span>
+                </div>
+                <th:block th:if="${#lists.isEmpty(franjas)}"><div th:replace="~{fragmentos :: vacio('No hay franjas libres para esta fecha')}"></div></th:block>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-list-check"></i> Citas del día</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla" th:if="${!#lists.isEmpty(citasDia)}">
+                    <thead><tr><th>Hora</th><th>Paciente</th><th>Canal</th><th>Estado</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${citasDia}">
+                        <td><b th:text="${#temporals.format(c.fechaHora, 'HH:mm')}"></b></td>
+                        <td th:text="${c.pacienteNombre}"><div class="sub"></div></td>
+                        <td th:text="${c.canal}"></td>
+                        <td><span th:replace="~{fragmentos :: estado(${c.estado})}"></span></td>
+                        <td class="acc">
+                            <form th:if="${c.estado == 'ASIGNADA'}" th:action="@{/admisiones/citas/{id}/cancelar(id=${c.id})}" method="post" class="en-linea" data-confirmar="¿Cancelar la cita y liberar la franja?">
+                                <input type="hidden" name="motivo" value="Cancelada en ventanilla">
+                                <button class="btn chico peligro" type="submit"><i class="bi bi-x-circle"></i> Cancelar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(citasDia)}"><div th:replace="~{fragmentos :: vacio('Sin citas para este día')}"></div></th:block>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

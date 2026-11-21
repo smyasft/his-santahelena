@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Interconsultas', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Interconsultas</h1><div class="ruta" th:text="${'Especialidad del usuario: ' + (yo.especialidad != null ? yo.especialidad : '—')}"></div></div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-inbox"></i> Pendientes</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha</th><th>Prioridad</th><th>Paciente</th><th>Especialidad</th><th>Motivo</th><th>Solicita</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="i : ${lista}" th:classappend="${i.prioridad == 'URGENTE'} ? 'fila-aviso'">
+                    <td th:text="${#temporals.format(i.fecha, 'dd/MM HH:mm')}"></td>
+                    <td><span class="chip" th:classappend="${i.prioridad == 'URGENTE'} ? 'rojo'" th:text="${i.prioridad}"></span></td>
+                    <td><a th:href="@{/hce/historia/{id}(id=${i.pacienteId})}" th:text="${i.pacienteNombre}"></a></td>
+                    <td th:text="${i.especialidad}"></td>
+                    <td th:text="${i.motivo}"></td>
+                    <td class="sub" th:text="${i.solicitanteNombre}"></td>
+                    <td><span th:replace="~{fragmentos :: estado(${i.estado})}"></span><div class="sub" th:if="${i.especialistaNombre != null}" th:text="${i.especialistaNombre}"></div></td>
+                    <td class="acc">
+                        <form th:if="${i.estado == 'SOLICITADA'}" th:action="@{/especialista/interconsulta/{id}/aceptar(id=${i.id})}" method="post" class="en-linea">
+                            <button class="btn chico primario" type="submit">Aceptar</button>
+                        </form>
+                        <form th:if="${i.estado == 'ACEPTADA' and i.especialistaId == yo.id}" th:action="@{/especialista/interconsulta/{id}/atender(id=${i.id})}" method="post" class="en-linea">
+                            <button class="btn chico exito" type="submit"><i class="bi bi-journal-plus"></i> Responder</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay interconsultas pendientes')}"></div></th:block>
+        </div>
+    </div>
+    <div class="panel" th:if="${!#lists.isEmpty(respondidas)}">
+        <div class="cab"><i class="bi bi-check2-all"></i> Respondidas</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla"><tbody>
+            <tr th:each="i : ${respondidas}">
+                <td th:text="${#temporals.format(i.respondidaEn, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${i.pacienteNombre}"></td><td th:text="${i.especialidad}"></td><td th:text="${i.especialistaNombre}"></td>
+                <td class="acc"><a class="btn chico" th:href="@{/hce/atencion/{id}(id=${i.respuestaAtencionId})}">Ver respuesta</a></td>
+            </tr>
+            </tbody></table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Mis resultados', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Resultados de laboratorio</h1><div class="ruta">Solo se publican resultados validados por el laboratorio.</div></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha de toma</th><th>Exámenes</th><th>Muestra</th><th>Médico</th><th>Validado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="o : ${lista}">
+                    <td th:text="${#temporals.format(o.recibidaEn, 'dd/MM/yyyy')}"></td>
+                    <td><b th:text="${o.examenesTexto()}"></b></td>
+                    <td th:text="${o.codigoMuestra}"></td>
+                    <td th:text="${o.medicoNombre}"></td>
+                    <td th:text="${#temporals.format(o.validadaEn, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td class="acc"><a class="btn chico primario" th:href="@{/portal/resultados/{id}(id=${o.id})}"><i class="bi bi-file-earmark-pdf"></i> Ver / descargar</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No tiene resultados publicados')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

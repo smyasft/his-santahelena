@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Paz y salvo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/his.css}"></head>
+<body class="doc">
+<div th:replace="~{fragmentos :: barraDoc('/facturacion/paz-y-salvo')}"></div>
+<div class="hoja">
+    <div th:replace="~{fragmentos :: membrete(${'Paz y salvo ' + pys.numero})}"></div>
+    <h2>Paz y salvo</h2>
+    <p style="font-size:13px;line-height:1.7;margin-top:20px">
+        El área de Facturación de <b th:text="${cfg.razonSocial}"></b> certifica que el(la) paciente
+        <b th:text="${pys.pacienteNombre}"></b>, identificado(a) con <b th:text="${pys.pacienteDocumento}"></b>,
+        se encuentra a paz y salvo por concepto de los servicios prestados durante su atención, y puede realizar su egreso de la institución.
+    </p>
+    <p><b>Facturas asociadas:</b> <span th:text="${pys.facturas != null and pys.facturas != '' ? pys.facturas : 'Ninguna'}"></span></p>
+    <p><b>Fecha de expedición:</b> <span th:text="${#temporals.format(pys.fecha, 'dd/MM/yyyy HH:mm')}"></span></p>
+    <div class="firma-linea"><div th:text="${pys.expedidoPor + ' · Facturación'}"></div><div>Gestor de camas / portería</div></div>
+</div>
+<script th:src="@{/js/his.js}"></script>
+</body>
+</html>

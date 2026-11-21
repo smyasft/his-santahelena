@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Catálogos', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Catálogos maestros</h1>
+        <div class="ruta">CIE-10 (diagnósticos) · CUPS (procedimientos y tarifas base)</div>
+    </div>
+    <div class="pestanas">
+        <a th:href="@{/admin/catalogos(tipo='CIE10')}" th:classappend="${tipo == 'CIE10'} ? 'activa'">CIE-10</a>
+        <a th:href="@{/admin/catalogos(tipo='CUPS')}" th:classappend="${tipo == 'CUPS'} ? 'activa'">CUPS</a>
+    </div>
+    <div class="grid g-8-4">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-book"></i> <span th:text="${tipo}"></span> <span class="der" th:text="${total + ' código(s) en total'}"></span></div>
+            <div class="cuerpo">
+                <form class="barra-busqueda" th:action="@{/admin/catalogos}" method="get">
+                    <input type="hidden" name="tipo" th:value="${tipo}">
+                    <div class="campo"><label>Buscar</label><input type="search" name="q" th:value="${q}" placeholder="Código o descripción"></div>
+                    <button class="btn" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                </form>
+            </div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla">
+                    <thead><tr><th>Código</th><th>Descripción</th><th class="num" th:if="${tipo == 'CUPS'}">Tarifa base</th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${lista}">
+                        <td><b th:text="${c.codigo}"></b></td>
+                        <td th:text="${c.descripcion}"></td>
+                        <td class="num" th:if="${tipo == 'CUPS'}" th:text="${c.valor != null ? '$ ' + #numbers.formatDecimal(c.valor, 1, 'POINT', 0, 'COMMA') : '—'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-plus-circle"></i> Agregar o actualizar código</div>
+                <form th:action="@{/admin/catalogos/agregar}" method="post">
+                    <input type="hidden" name="tipo" th:value="${tipo}">
+                    <div class="cuerpo">
+                        <div class="campos c2">
+                            <div class="campo"><label>Código</label><input type="text" name="codigo" required></div>
+                            <div class="campo" th:if="${tipo == 'CUPS'}"><label>Tarifa base</label><input type="number" name="valor" step="100"></div>
+                            <div class="campo todo"><label>Descripción</label><input type="text" name="descripcion" required></div>
+                        </div>
+                    </div>
+                    <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar</button></div>
+                </form>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-upload"></i> Carga masiva (CSV)</div>
+                <form th:action="@{/admin/catalogos/importar}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="tipo" th:value="${tipo}">
+                    <div class="cuerpo">
+                        <input type="file" name="archivo" accept=".csv,.txt" required>
+                        <p class="ayuda">Formato UTF-8 separado por punto y coma: <code>codigo;descripcion;valor</code>. Los códigos existentes se actualizan.</p>
+                    </div>
+                    <div class="pie"><button class="btn" type="submit"><i class="bi bi-cloud-upload"></i> Importar</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

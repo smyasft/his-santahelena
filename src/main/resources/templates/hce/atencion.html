@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Registro clínico', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1 th:text="${'Registro de ' + #strings.toLowerCase(a.tipo)}">Registro</h1>
+        <span class="chip" th:text="${a.especialidad}"></span>
+        <span class="chip verde" th:if="${a.firmada}"><i class="bi bi-patch-check"></i> Firmado</span>
+        <span class="chip gris" th:unless="${a.firmada}">Borrador</span>
+        <div class="acciones">
+            <a class="btn" th:href="@{/hce/historia/{id}(id=${p.id})}"><i class="bi bi-journal-medical"></i> Historia completa</a>
+            <a class="btn" th:if="${a.firmada}" th:href="@{/hce/atencion/{id}/imprimir(id=${a.id})}"><i class="bi bi-printer"></i> Imprimir</a>
+            <a class="btn" th:href="@{/hce/prescripcion/nueva(pacienteId=${p.id},atencionId=${a.id})}"><i class="bi bi-prescription2"></i> Fórmula</a>
+            <a class="btn" th:href="@{/hce/orden-lab/nueva(pacienteId=${p.id},atencionId=${a.id})}"><i class="bi bi-eyedropper"></i> Laboratorio</a>
+            <a class="btn" th:href="@{/hce/interconsulta/nueva(pacienteId=${p.id},atencionId=${a.id})}"><i class="bi bi-arrow-left-right"></i> Interconsulta</a>
+        </div>
+    </div>
+
+    <div class="signos-mini" th:if="${!#lists.isEmpty(ultimosSignos)}" style="margin-bottom:12px">
+        <b>Últimos signos:</b>
+        <span th:each="s : ${ultimosSignos}" th:text="${#temporals.format(s.fecha, 'dd/MM HH:mm') + ' · TA ' + s.ta() + ' · FC ' + s.fc + ' · FR ' + s.fr + ' · T ' + s.temperatura + ' · Sat ' + s.saturacion}"></span>
+    </div>
+
+    <!-- EDICIÓN -->
+    <form th:if="${editable}" th:action="@{/hce/atencion/{id}/guardar(id=${a.id})}" method="post" autocomplete="off">
+        <datalist id="lista-cie10"></datalist>
+        <div class="grid g-8-4">
+            <div>
+                <div class="panel">
+                    <div class="cab"><i class="bi bi-chat-left-text"></i> Anamnesis</div>
+                    <div class="cuerpo">
+                        <div class="campos c2">
+                            <div class="campo todo"><label>Motivo de consulta <span class="req">*</span></label><input type="text" name="motivoConsulta" th:value="${a.motivoConsulta}"></div>
+                            <div class="campo todo"><label>Enfermedad actual</label><textarea class="alto" name="enfermedadActual" th:text="${a.enfermedadActual}"></textarea></div>
+                            <div class="campo todo"><label>Antecedentes</label><textarea name="antecedentes" th:text="${a.antecedentes}"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="cab"><i class="bi bi-person-check"></i> Examen físico y análisis</div>
+                    <div class="cuerpo">
+                        <div class="campos c2">
+                            <div class="campo todo"><label>Examen físico</label><textarea class="alto" name="examenFisico" th:text="${a.examenFisico}"></textarea></div>
+                            <div class="campo todo"><label>Análisis <span class="req">*</span></label><textarea name="analisis" th:text="${a.analisis}"></textarea></div>
+                            <div class="campo todo"><label>Plan de manejo <span class="req">*</span></label><textarea name="plan" th:text="${a.plan}"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel" th:if="${!#lists.isEmpty(a.camposEspecialidad)}">
+                    <div class="cab"><i class="bi bi-clipboard2-heart"></i> Campos de la especialidad · <span th:text="${a.especialidad}"></span></div>
+                    <div class="cuerpo">
+                        <div class="campos c2">
+                            <div class="campo" th:each="c : ${a.camposEspecialidad}">
+                                <label th:text="${c.etiqueta}"></label>
+                                <input type="hidden" name="campo_etiqueta" th:value="${c.etiqueta}">
+                                <textarea name="campo_valor" th:text="${c.valor}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="panel">
+                    <div class="cab"><i class="bi bi-clipboard2-check"></i> Diagnósticos CIE-10 <span class="req">*</span></div>
+                    <div class="cuerpo">
+                        <div id="dx-lista">
+                            <div class="dx-fila" th:each="d : ${a.diagnosticos}">
+                                <input type="text" class="autocat" data-tipo="CIE10" list="lista-cie10" name="dx_codigo" th:value="${d.codigo + ' — ' + d.descripcion}">
+                                <select name="dx_tipo"><option th:each="t : ${ {'Principal','Relacionado','Complicación'} }" th:text="${t}" th:selected="${d.tipo == t}"></option></select>
+                            </div>
+                            <div class="dx-fila" th:if="${#lists.isEmpty(a.diagnosticos)}">
+                                <input type="text" class="autocat" data-tipo="CIE10" list="lista-cie10" name="dx_codigo" placeholder="Escriba código o nombre">
+                                <select name="dx_tipo"><option>Principal</option><option>Relacionado</option><option>Complicación</option></select>
+                            </div>
+                        </div>
+                        <button class="btn chico" type="button" data-clonar="plantilla-dx" data-destino="dx-lista"><i class="bi bi-plus"></i> Agregar diagnóstico</button>
+                        <template id="plantilla-dx">
+                            <div class="dx-fila">
+                                <input type="text" class="autocat" data-tipo="CIE10" list="lista-cie10" name="dx_codigo" placeholder="Escriba código o nombre">
+                                <select name="dx_tipo"><option>Relacionado</option><option>Principal</option><option>Complicación</option></select>
+                            </div>
+                        </template>
+                        <p class="ayuda">Escriba al menos dos letras para buscar en el catálogo CIE-10.</p>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="cab"><i class="bi bi-signpost-split"></i> Conducta</div>
+                    <div class="cuerpo">
+                        <label class="check"><input type="checkbox" name="ordenHospitalizacion" value="si" th:checked="${a.ordenHospitalizacion}" data-muestra="bloque-hosp"> Ordenar hospitalización</label>
+                        <div id="bloque-hosp" style="margin:8px 0 10px 22px">
+                            <div class="campo"><label>Servicio</label>
+                                <select name="servicioHospitalizacion"><option th:each="s : ${servicios}" th:text="${s}" th:selected="${a.servicioHospitalizacion == s}"></option></select>
+                            </div>
+                            <label class="check" style="margin-top:6px"><input type="checkbox" name="requiereAislamiento" value="si" th:checked="${a.requiereAislamiento}"> Requiere aislamiento</label>
+                        </div>
+                        <div th:if="${hospitalizado}" style="margin-top:6px">
+                            <label class="check"><input type="checkbox" name="ordenEgreso" value="si" th:checked="${a.ordenEgreso}"> Dar orden de egreso hospitalario</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="pie" style="justify-content:stretch;flex-direction:column">
+                        <button class="btn" type="submit" name="accion" value="guardar"><i class="bi bi-save"></i> Guardar borrador</button>
+                        <button class="btn exito" type="submit" name="accion" value="firmar" data-confirmar="Al firmar, el registro queda sellado y no podrá modificarse. ¿Firmar ahora?"><i class="bi bi-pen"></i> Firmar electrónicamente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- LECTURA -->
+    <div th:unless="${editable}" class="grid g-8-4">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-file-medical"></i> <span th:text="${#temporals.format(a.fecha, 'dd/MM/yyyy HH:mm') + ' · ' + a.profesionalNombre}"></span></div>
+            <div class="cuerpo">
+                <div class="aviso alerta" th:if="${!a.firmada}"><i class="bi bi-lock"></i><div>Borrador de otro profesional: solo lectura.</div></div>
+                <div class="seccion-hc"><h4>Motivo de consulta</h4><p th:text="${a.motivoConsulta}"></p></div>
+                <div class="seccion-hc" th:if="${a.enfermedadActual != null}"><h4>Enfermedad actual</h4><p th:text="${a.enfermedadActual}"></p></div>
+                <div class="seccion-hc" th:if="${a.antecedentes != null}"><h4>Antecedentes</h4><p th:text="${a.antecedentes}"></p></div>
+                <div class="seccion-hc" th:if="${a.examenFisico != null}"><h4>Examen físico</h4><p th:text="${a.examenFisico}"></p></div>
+                <div class="seccion-hc" th:each="c : ${a.camposEspecialidad}" th:if="${c.valor != null}"><h4 th:text="${c.etiqueta}"></h4><p th:text="${c.valor}"></p></div>
+                <div class="seccion-hc"><h4>Análisis</h4><p th:text="${a.analisis}"></p></div>
+                <div class="seccion-hc"><h4>Plan</h4><p th:text="${a.plan}"></p></div>
+                <div class="seccion-hc"><h4>Diagnósticos</h4>
+                    <div th:each="d : ${a.diagnosticos}"><b th:text="${d.codigo}"></b> <span th:text="${d.descripcion}"></span> <span class="chip gris" th:text="${d.tipo}"></span></div>
+                </div>
+                <div class="seccion-hc" th:if="${a.ordenHospitalizacion}"><h4>Conducta</h4><p th:text="${'Hospitalizar en ' + a.servicioHospitalizacion + (a.requiereAislamiento ? ' con aislamiento' : '')}"></p></div>
+                <div class="seccion-hc" th:if="${a.ordenEgreso}"><h4>Conducta</h4><p>Orden de egreso hospitalario.</p></div>
+                <div class="firma" th:if="${a.firmada}">
+                    <i class="bi bi-patch-check-fill"></i>
+                    <div>Firmado electrónicamente por <b th:text="${a.profesionalNombre}"></b> <span th:text="${a.profesionalRegistro}"></span>
+                        el <span th:text="${#temporals.format(a.fechaFirma, 'dd/MM/yyyy HH:mm')}"></span>
+                        <div class="hash" th:text="${'SHA-256: ' + a.hashFirma}"></div></div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="panel" th:if="${a.firmada}">
+                <div class="cab"><i class="bi bi-pencil"></i> Nota aclaratoria</div>
+                <form th:action="@{/hce/atencion/{id}/aclaracion(id=${a.id})}" method="post">
+                    <div class="cuerpo">
+                        <p class="ayuda" style="margin-top:0">El registro original no se modifica (Res. 1995 de 1999). La aclaración queda firmada y vinculada.</p>
+                        <textarea name="texto" class="alto" required placeholder="Texto de la aclaración"></textarea>
+                    </div>
+                    <div class="pie"><button class="btn primario" type="submit" data-confirmar="La nota aclaratoria se firmará de inmediato. ¿Continuar?"><i class="bi bi-pen"></i> Firmar aclaración</button></div>
+                </form>
+            </div>
+            <div class="panel" th:if="${!#lists.isEmpty(aclaratorias)}">
+                <div class="cab"><i class="bi bi-link-45deg"></i> Aclaraciones registradas</div>
+                <div class="cuerpo">
+                    <div th:each="n : ${aclaratorias}" style="margin-bottom:10px">
+                        <div class="sub" th:text="${#temporals.format(n.fecha, 'dd/MM/yyyy HH:mm') + ' · ' + n.profesionalNombre}"></div>
+                        <p style="margin:2px 0;white-space:pre-wrap" th:text="${n.analisis}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

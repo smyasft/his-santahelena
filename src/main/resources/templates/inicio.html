@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Tablero', ~{::main})}">
+<body>
+<main class="tablero">
+
+    <!-- Fila 1: bienvenida con ilustración + tarjeta de perfil -->
+    <div class="fila-hero">
+        <section class="hero">
+            <div class="hero-texto">
+                <span class="hero-fecha"><i class="bi bi-calendar3"></i>
+                    <span th:text="${#temporals.format(#temporals.createNow(), 'EEEE d ''de'' MMMM, yyyy')}">fecha</span></span>
+                <h1 th:text="${'¡Hola, ' + yo.nombre + '!'}">Hola</h1>
+                <p>Este es el resumen de hoy en la clínica. Revise sus pendientes, alertas y la agenda del día.</p>
+                <div class="hero-acciones">
+                    <a class="btn claro" th:if="${!#lists.isEmpty(modulos)}" th:href="@{${modulos[0].items[0].ruta}}">
+                        <i class="bi bi-arrow-right-circle"></i> <span th:text="${'Ir a ' + modulos[0].items[0].etiqueta}">Ir</span></a>
+                    <a class="btn vidrio" th:href="@{/alertas}"><i class="bi bi-bell"></i>
+                        <span th:text="${alertasNoLeidas + ' alerta(s) nueva(s)'}">alertas</span></a>
+                </div>
+            </div>
+            <svg class="hero-ilustracion" viewBox="0 0 320 220" aria-hidden="true">
+                <defs>
+                    <linearGradient id="gPortapapel" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6fffb"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="168" cy="112" r="96" fill="rgba(255,255,255,.12)"/>
+                <circle cx="168" cy="112" r="70" fill="rgba(255,255,255,.12)"/>
+                <!-- portapapeles con monitor de signos -->
+                <g class="flotar">
+                    <rect x="112" y="40" width="112" height="146" rx="16" fill="url(#gPortapapel)"/>
+                    <rect x="142" y="30" width="52" height="22" rx="9" fill="#99f6e4"/>
+                    <rect x="128" y="70" width="80" height="44" rx="10" fill="#ccfbf1"/>
+                    <polyline points="132,94 148,94 156,78 166,108 176,86 184,94 204,94" fill="none" stroke="#0d9488" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="pulso"/>
+                    <rect x="128" y="126" width="64" height="8" rx="4" fill="#d5f5f0"/>
+                    <rect x="128" y="142" width="80" height="8" rx="4" fill="#d5f5f0"/>
+                    <rect x="128" y="158" width="48" height="8" rx="4" fill="#d5f5f0"/>
+                </g>
+                <!-- estetoscopio -->
+                <path d="M236 70 C 262 70 266 120 246 140 C 232 154 214 160 214 182" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+                <circle cx="214" cy="190" r="11" fill="#ffffff"/><circle cx="214" cy="190" r="5" fill="#14b8a6"/>
+                <!-- cápsulas y cruces flotantes -->
+                <g class="flotar lento"><rect x="44" y="132" width="44" height="18" rx="9" fill="#ffffff" transform="rotate(-28 66 141)"/><rect x="44" y="132" width="22" height="18" rx="9" fill="#fca5a5" transform="rotate(-28 66 141)"/></g>
+                <g class="flotar rapido"><rect x="60" y="48" width="12" height="36" rx="4" fill="#ffffff"/><rect x="48" y="60" width="36" height="12" rx="4" fill="#ffffff"/></g>
+                <g class="flotar"><rect x="270" y="150" width="8" height="24" rx="3" fill="#a5f3fc"/><rect x="262" y="158" width="24" height="8" rx="3" fill="#a5f3fc"/></g>
+                <circle cx="282" cy="52" r="7" fill="#fde68a" class="flotar rapido"/>
+                <circle cx="96" cy="196" r="5" fill="#ffffff" opacity=".7"/>
+            </svg>
+        </section>
+
+        <section class="tarjeta-perfil">
+            <div class="perfil-cab">
+                <span class="avatar-grande" th:text="${yo.iniciales()}">AB</span>
+                <div>
+                    <div class="perfil-nombre" th:text="${yo.nombre}">Nombre</div>
+                    <div class="perfil-rol" th:text="${yo.especialidad != null ? yo.especialidad : yo.rolesTexto()}">Rol</div>
+                </div>
+            </div>
+            <div class="perfil-datos">
+                <div><span>Rol</span><b th:text="${yo.rolesTexto()}">Rol</b></div>
+                <div><span>Registro</span><b th:text="${yo.registroMedico != null ? yo.registroMedico : '—'}">RM</b></div>
+                <div><span>Último acceso</span><b th:text="${yo.ultimoAcceso != null ? #temporals.format(yo.ultimoAcceso, 'dd/MM HH:mm') : 'Hoy'}">hoy</b></div>
+            </div>
+            <div class="perfil-stats">
+                <div><b th:text="${#lists.size(agendaHoy)}">0</b><span th:text="${agendaPropia ? 'mis citas hoy' : 'citas hoy'}">citas</span></div>
+                <div><b th:text="${alertasNoLeidas}">0</b><span>alertas</span></div>
+                <div><b th:text="${#lists.size(modulos)}">0</b><span>módulos</span></div>
+            </div>
+            <a class="btn chico" th:href="@{/perfil}"><i class="bi bi-person-gear"></i> Mi perfil y seguridad</a>
+        </section>
+    </div>
+
+    <!-- Fila 2: indicadores -->
+    <div class="kpis">
+        <a class="kpi" th:each="i, st : ${indicadores}" th:href="@{${i.enlace}}"
+           th:classappend="${st.index < 2 ? 'relleno-' + (st.index == 0 ? 'teal' : 'cielo') : 'tono-' + i.tono}">
+            <div class="kpi-cab">
+                <span class="kpi-ic"><i class="bi" th:classappend="${i.icono}"></i></span>
+                <i class="bi bi-arrow-up-right kpi-ir"></i>
+            </div>
+            <div class="kpi-valor" th:attr="data-contar=${i.valor}" th:text="${i.valor}">0</div>
+            <div class="kpi-titulo" th:text="${i.titulo}">Título</div>
+            <div class="kpi-detalle" th:text="${i.detalle}">detalle</div>
+            <svg class="kpi-onda" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 45 C 30 20, 50 55, 80 35 S 130 10, 160 30 S 190 40, 200 20 L200 60 L0 60 Z"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Fila 3: gráficas -->
+    <div class="fila-graficas">
+        <section class="panel">
+            <div class="cab"><i class="bi bi-bar-chart-line"></i> <span th:text="${agendaPropia ? 'Mis citas de la semana' : 'Citas de la semana'}">Citas</span>
+                <span class="der" th:text="${'Total: ' + totalSemana}">total</span></div>
+            <div class="cuerpo">
+                <div class="barras">
+                    <div class="barra-col" th:each="b, st : ${semana}" th:classappend="${b.hoy} ? 'hoy'">
+                        <span class="barra-valor" th:text="${b.valor}">0</span>
+                        <div class="barra-pista"><div class="barra" th:style="${'height:' + b.alto + '%;animation-delay:' + (st.index * 70) + 'ms'}"></div></div>
+                        <span class="barra-dia" th:text="${b.etiqueta}">Lun</span>
+                        <span class="barra-fecha" th:text="${b.fecha}">1</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" th:each="d : ${ {donaCamas, donaTriaje} }">
+            <div class="cab"><i class="bi" th:classappend="${d == donaCamas ? 'bi-hospital' : 'bi-activity'}"></i> <span th:text="${d.titulo}">Dona</span></div>
+            <div class="cuerpo dona-cuerpo">
+                <div class="dona" th:style="${'background:' + d.gradiente()}">
+                    <div class="dona-centro"><b th:text="${d.centro}">0</b><span th:text="${d.subcentro}">total</span></div>
+                </div>
+                <ul class="leyenda-dona">
+                    <li th:each="s : ${d.segmentos}">
+                        <i th:style="${'background:' + s.color}"></i>
+                        <span th:text="${s.etiqueta}">Etiqueta</span>
+                        <b th:text="${s.valor}">0</b>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <!-- Fila 4: agenda del día + calendario y alertas -->
+    <div class="fila-agenda">
+        <section class="panel">
+            <div class="cab"><i class="bi bi-clock-history"></i> <span th:text="${agendaPropia ? 'Mi agenda de hoy' : 'Agenda de hoy en la clínica'}">Agenda</span>
+                <span class="der"><a th:href="@{${agendaPropia ? '/hce' : '/admisiones/citas'}}">Ver todo <i class="bi bi-chevron-right"></i></a></span></div>
+            <div class="cuerpo">
+                <ol class="linea-agenda" th:if="${!#lists.isEmpty(agendaHoy)}">
+                    <li th:each="c : ${agendaHoy}" th:classappend="${c.estado == 'CANCELADA' ? 'cancelada' : (c.fechaHora.isBefore(ahora) ? 'pasada' : 'proxima')}">
+                        <span class="la-hora" th:text="${#temporals.format(c.fechaHora, 'HH:mm')}">08:00</span>
+                        <span class="la-punto"></span>
+                        <div class="la-tarjeta">
+                            <span class="avatar-mini" th:text="${#strings.substring(c.pacienteNombre, 0, 1)}">A</span>
+                            <div class="la-info">
+                                <b th:text="${c.pacienteNombre}">Paciente</b>
+                                <span th:text="${c.tipo + ' · ' + (agendaPropia ? c.consultorio : c.profesionalNombre)}">detalle</span>
+                            </div>
+                            <span th:replace="~{fragmentos :: estado(${c.estado})}"></span>
+                        </div>
+                    </li>
+                </ol>
+                <th:block th:if="${#lists.isEmpty(agendaHoy)}"><div th:replace="~{fragmentos :: vacio('No hay citas programadas para hoy')}"></div></th:block>
+            </div>
+        </section>
+
+        <div class="col-derecha">
+            <section class="panel calendario-panel">
+                <div class="cab"><i class="bi bi-calendar3"></i> <span th:text="${mes.titulo}">Mes</span></div>
+                <div class="cuerpo">
+                    <div class="calendario">
+                        <span class="cal-dia-semana" th:each="n : ${ {'L','M','M','J','V','S','D'} }" th:text="${n}">L</span>
+                        <th:block th:each="sem : ${mes.semanas}">
+                            <span th:each="d : ${sem}" class="cal-dia"
+                                  th:classappend="${d == null ? 'vacio-cal' : ((d.hoy ? 'hoy ' : '') + (d.conCitas ? 'con-citas' : ''))}"
+                                  th:text="${d != null ? d.numero : ''}"></span>
+                        </th:block>
+                    </div>
+                    <div class="cal-leyenda"><span><i class="hoy"></i>Hoy</span><span><i class="punto"></i>Días con citas</span></div>
+                </div>
+            </section>
+            <section class="panel">
+                <div class="cab"><i class="bi bi-bell"></i> Alertas recientes <span class="der"><a th:href="@{/alertas}">Ver todas</a></span></div>
+                <div class="cuerpo sin">
+                    <ul class="lista-alertas" th:if="${!#lists.isEmpty(ultimasAlertas)}">
+                        <li th:each="a : ${ultimasAlertas}" th:classappend="${!a.leida} ? 'nueva'">
+                            <span class="sev" th:classappend="${a.severidad}"></span>
+                            <div>
+                                <div><b th:if="${a.pacienteNombre != null}" th:text="${a.pacienteNombre + ': '}"></b><span th:text="${a.mensaje}"></span></div>
+                                <div class="meta" th:text="${a.tipo + ' · ' + #temporals.format(a.fecha, 'dd/MM HH:mm')}"></div>
+                            </div>
+                        </li>
+                    </ul>
+                    <th:block th:if="${#lists.isEmpty(ultimasAlertas)}"><div th:replace="~{fragmentos :: vacio('No hay alertas para su rol')}"></div></th:block>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <section class="panel">
+        <div class="cab"><i class="bi bi-lightning-charge"></i> Accesos rápidos</div>
+        <div class="cuerpo">
+            <div class="accesos">
+                <th:block th:each="g : ${modulos}">
+                    <a class="acceso" th:each="it : ${g.items}" th:href="@{${it.ruta}}">
+                        <i class="bi" th:classappend="${it.icono}"></i>
+                        <span th:text="${it.etiqueta}">Opción</span>
+                        <small th:text="${g.modulo.nombre}">Módulo</small>
+                    </a>
+                </th:block>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Factura electrónica</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/his.css}"></head>
+<body class="doc">
+<div th:replace="~{fragmentos :: barraDoc('/facturacion/facturas')}"></div>
+<div class="hoja">
+    <div th:replace="~{fragmentos :: membrete(${'Factura ' + f.numero})}"></div>
+    <h2>Factura electrónica de venta</h2>
+    <table class="sinborde">
+        <tr><td><b>Número:</b> <span th:text="${f.numero}"></span></td><td><b>Fecha:</b> <span th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy HH:mm')}"></span></td></tr>
+        <tr><td><b>Adquirente:</b> <span th:text="${f.adquirenteNombre}"></span></td><td><b>Identificación:</b> <span th:text="${f.adquirenteDocumento}"></span></td></tr>
+        <tr><td><b>Paciente:</b> <span th:text="${f.pacienteNombre}"></span></td><td><b>Documento:</b> <span th:text="${f.pacienteTipoDocumento + ' ' + f.pacienteDocumento}"></span></td></tr>
+    </table>
+    <table style="margin-top:8px">
+        <thead><tr><th>Código</th><th>Descripción</th><th class="num">Cant.</th><th class="num">Vr. unitario</th><th class="num">Vr. total</th></tr></thead>
+        <tbody>
+        <tr th:each="g : ${f.items}">
+            <td th:text="${g.codigo}"></td><td th:text="${g.descripcion}"></td><td class="num" th:text="${g.cantidad}"></td>
+            <td class="num" th:text="${'$ ' + #numbers.formatDecimal(g.valorUnitario, 1, 'POINT', 0, 'COMMA')}"></td>
+            <td class="num" th:text="${'$ ' + #numbers.formatDecimal(g.valorTotal, 1, 'POINT', 0, 'COMMA')}"></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr><td colspan="4" class="num"><b>Subtotal</b></td><td class="num" th:text="${'$ ' + #numbers.formatDecimal(f.subtotal, 1, 'POINT', 0, 'COMMA')}"></td></tr>
+        <tr><td colspan="4" class="num">IVA (servicios de salud excluidos, art. 476 E.T.)</td><td class="num">$ 0</td></tr>
+        <tr><td colspan="4" class="num"><b>TOTAL</b></td><td class="num"><b th:text="${'$ ' + #numbers.formatDecimal(f.total, 1, 'POINT', 0, 'COMMA')}"></b></td></tr>
+        </tfoot>
+    </table>
+    <p style="margin-top:10px"><b>Estado DIAN:</b> <span th:text="${f.estadoDian}"></span> · <b>Pago:</b> <span th:text="${f.pagada ? f.formaPago : 'Pendiente'}"></span></p>
+    <p style="word-break:break-all;font-size:10px"><b>CUFE:</b> <span th:text="${f.cufe}"></span></p>
+    <div class="nota">SIMULACIÓN ACADÉMICA: este documento no fue transmitido a la DIAN y no tiene validez tributaria. En producción el CUFE y la transmisión los realiza un proveedor tecnológico autorizado.</div>
+</div>
+<script th:src="@{/js/his.js}"></script>
+</body>
+</html>

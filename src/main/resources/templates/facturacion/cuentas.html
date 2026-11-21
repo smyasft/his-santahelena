@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Facturación', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Cuentas abiertas</h1><div class="ruta">Los cargos llegan automáticamente desde consulta, laboratorio, farmacia y estancia.</div></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Apertura</th><th>Paciente</th><th>Entidad</th><th class="num">Cargos</th><th class="num">Total</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${lista}">
+                    <td th:text="${#temporals.format(c.abiertaEn, 'dd/MM/yyyy')}"></td>
+                    <td><b th:text="${c.pacienteNombre}"></b><div class="sub" th:text="${c.pacienteDocumento}"></div></td>
+                    <td th:text="${c.epsNombre}"></td>
+                    <td class="num" th:text="${#lists.size(c.cargos)}"></td>
+                    <td class="num"><b th:text="${'$ ' + #numbers.formatDecimal(c.total(), 1, 'POINT', 0, 'COMMA')}"></b></td>
+                    <td class="acc"><a class="btn chico primario" th:href="@{/facturacion/cuenta/{id}(id=${c.id})}"><i class="bi bi-receipt"></i> Ver cuenta</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay cuentas abiertas')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Ingreso a urgencias', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Ingreso a urgencias</h1>
+        <div class="ruta">La urgencia vital no se condiciona a la verificación de derechos (Ley 1751 de 2015).</div>
+    </div>
+    <div class="grid g2">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-search"></i> Paciente identificado</div>
+            <div class="cuerpo">
+                <form class="barra-busqueda" th:action="@{/admisiones/urgencias}" method="get">
+                    <div class="campo"><label>Documento o nombre</label><input type="search" name="q" th:value="${q}" autofocus></div>
+                    <button class="btn" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                </form>
+            </div>
+            <div class="cuerpo sin" th:if="${!#lists.isEmpty(resultados)}">
+                <table class="tabla">
+                    <tbody>
+                    <tr th:each="p : ${resultados}">
+                        <td><b th:text="${p.nombreCompleto()}"></b><div class="sub" th:text="${p.documentoTexto() + ' · ' + p.edadTexto() + ' · ' + p.epsNombre}"></div></td>
+                        <td style="width:55%">
+                            <form th:action="@{/admisiones/urgencias/ingresar}" method="post" style="display:flex;gap:6px">
+                                <input type="hidden" name="pacienteId" th:value="${p.id}">
+                                <input type="text" name="motivo" placeholder="Motivo de consulta" required>
+                                <button class="btn peligro chico" type="submit">Ingresar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cuerpo" th:if="${q != null and q != '' and #lists.isEmpty(resultados)}">
+                <div class="aviso info"><i class="bi bi-info-circle"></i><div>No está registrado. <a th:href="@{/admisiones/paciente/nuevo(documento=${q})}">Regístrelo</a> o use el ingreso de paciente no identificado.</div></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab" style="color:var(--rojo)"><i class="bi bi-person-exclamation"></i> Paciente no identificado (NN)</div>
+            <form th:action="@{/admisiones/urgencias/nn}" method="post">
+                <div class="cuerpo">
+                    <div class="campos c3">
+                        <div class="campo"><label>Sexo</label><select name="sexo"><option value="M">Masculino</option><option value="F">Femenino</option><option value="I">Indeterminado</option></select></div>
+                        <div class="campo"><label>Edad aproximada</label><input type="number" name="edad" min="0" max="120"></div>
+                        <div class="campo"><label>Descripción</label><input type="text" name="descripcion" placeholder="Ej: hombre adulto, chaqueta roja"></div>
+                        <div class="campo todo"><label>Motivo de ingreso <span class="req">*</span></label><input type="text" name="motivo" required placeholder="Ej: traído por ambulancia, inconsciente"></div>
+                    </div>
+                    <p class="ayuda">Se crea una historia temporal (NN-xxxxx) que se actualiza cuando el paciente sea identificado.</p>
+                </div>
+                <div class="pie"><button class="btn peligro" type="submit"><i class="bi bi-lightning"></i> Ingreso inmediato</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-list-ol"></i> Pacientes en urgencias</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(activas)}">
+                <thead><tr><th>Triaje</th><th>Llegada</th><th>Paciente</th><th>Motivo</th><th>EPS</th><th>Derechos</th><th>Estado</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${activas}">
+                    <td><span th:replace="~{fragmentos :: triaje(${a.triajeNivel})}"></span></td>
+                    <td th:text="${#temporals.format(a.fechaIngreso, 'HH:mm')}"></td>
+                    <td><b th:text="${a.pacienteNombre}"></b><div class="sub" th:text="${a.pacienteDocumento}"></div></td>
+                    <td th:text="${a.motivo}"></td>
+                    <td th:text="${a.epsNombre}"></td>
+                    <td th:text="${a.derechosEstado}"></td>
+                    <td><span th:replace="~{fragmentos :: estado(${a.estado})}"></span></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(activas)}"><div th:replace="~{fragmentos :: vacio('No hay pacientes en urgencias')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

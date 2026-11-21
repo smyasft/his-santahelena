@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Convenios', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Convenios con entidades pagadoras</h1><div class="ruta">El factor multiplica la tarifa base CUPS/CUM (1,00 = tarifa plena).</div></div>
+    <div class="grid g-8-4">
+        <div class="panel">
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla">
+                    <thead><tr><th>Código</th><th>Entidad</th><th>Tipo</th><th>NIT</th><th style="width:110px">Factor</th><th>Activo</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="e : ${lista}">
+                        <td><b th:text="${e.codigo}"></b></td>
+                        <td th:text="${e.nombre}"></td>
+                        <td class="sub" th:text="${e.tipo}"></td>
+                        <td class="sub" th:text="${e.nit}"></td>
+                        <td><input type="number" step="0.01" name="factorTarifa" th:value="${e.factorTarifa}" th:attr="form=${'conv-' + e.id}"></td>
+                        <td><input type="checkbox" name="activo" value="si" th:checked="${e.activo}" th:attr="form=${'conv-' + e.id}"></td>
+                        <td class="acc">
+                            <form th:id="${'conv-' + e.id}" th:action="@{/facturacion/convenios/guardar}" method="post" class="en-linea">
+                                <input type="hidden" name="id" th:value="${e.id}">
+                                <button class="btn chico" type="submit" title="Guardar"><i class="bi bi-save"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-plus-circle"></i> Nuevo convenio</div>
+            <form th:action="@{/facturacion/convenios/guardar}" method="post">
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo"><label>Código</label><input type="text" name="codigo" required></div>
+                        <div class="campo"><label>Tipo</label><select name="tipo"><option>CONTRIBUTIVO</option><option>SUBSIDIADO</option><option>PREPAGADA</option><option>ARL</option><option>SOAT</option></select></div>
+                        <div class="campo todo"><label>Nombre</label><input type="text" name="nombre" required></div>
+                        <div class="campo"><label>NIT</label><input type="text" name="nit"></div>
+                        <div class="campo"><label>Factor</label><input type="number" step="0.01" name="factorTarifa" value="1.00"></div>
+                    </div>
+                </div>
+                <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Crear</button></div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

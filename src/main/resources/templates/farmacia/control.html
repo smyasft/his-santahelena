@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Control especial', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Libro de medicamentos de control especial</h1><div class="ruta">Resolución 1478 de 2006 · Registro de entradas y salidas con paciente y prescriptor.</div>
+        <div class="acciones"><button class="btn" type="button" data-imprimir><i class="bi bi-printer"></i> Imprimir</button></div></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(movimientos)}">
+                <thead><tr><th>Fecha</th><th>Medicamento</th><th>Lote</th><th>Tipo</th><th class="num">Cant.</th><th class="num">Saldo</th><th>Paciente</th><th>Documento</th><th>Prescriptor</th><th>Entregó</th></tr></thead>
+                <tbody>
+                <tr th:each="mv : ${movimientos}">
+                    <td th:text="${#temporals.format(mv.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td><b th:text="${mv.medicamentoNombre}"></b></td>
+                    <td th:text="${mv.loteNumero}"></td>
+                    <td th:text="${mv.tipo}"></td>
+                    <td class="num" th:text="${mv.cantidad}"></td>
+                    <td class="num" th:text="${mv.saldo}"></td>
+                    <td th:text="${mv.pacienteNombre}"></td>
+                    <td th:text="${mv.pacienteDocumento}"></td>
+                    <td th:text="${mv.medicoNombre}"></td>
+                    <td class="sub" th:text="${mv.usuario}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(movimientos)}"><div th:replace="~{fragmentos :: vacio('Sin movimientos')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

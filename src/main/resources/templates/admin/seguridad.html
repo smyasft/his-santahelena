@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Parámetros del sistema', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Parámetros del sistema</h1></div>
+    <form th:action="@{/admin/seguridad}" method="post">
+        <div class="grid g2">
+            <div class="panel">
+                <div class="cab"><i class="bi bi-building"></i> Institución</div>
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo s2"><label>Razón social</label><input type="text" name="razonSocial" th:value="${c.razonSocial}"></div>
+                        <div class="campo"><label>NIT</label><input type="text" name="nit" th:value="${c.nit}"></div>
+                        <div class="campo"><label>Código de habilitación (REPS)</label><input type="text" name="codigoHabilitacion" th:value="${c.codigoHabilitacion}"></div>
+                        <div class="campo s2"><label>Ciudad</label><input type="text" name="ciudad" th:value="${c.ciudad}"></div>
+                    </div>
+                </div>
+                <div class="cab" style="border-radius:0;border-top:1px solid var(--borde)"><i class="bi bi-shield-lock"></i> Segundo factor (MFA) por rol</div>
+                <div class="cuerpo">
+                    <p class="ayuda" style="margin-top:0">Los roles marcados deberán ingresar un código TOTP de 6 dígitos (Google o Microsoft Authenticator). La primera vez se muestra un código QR para vincular la app.</p>
+                    <div class="campos c2">
+                        <label class="check" th:each="r : ${roles}"><input type="checkbox" name="rolesConMfa" th:value="${r.name()}" th:checked="${c.rolesConMfa.contains(r.name())}"> <span th:text="${r.nombre}"></span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-heart-pulse"></i> Rangos de alerta de signos vitales</div>
+                <div class="cuerpo">
+                    <p class="ayuda" style="margin-top:0">Fuera de estos rangos el sistema marca el registro de enfermería y alerta al médico.</p>
+                    <table class="tabla">
+                        <thead><tr><th>Signo</th><th>Mínimo</th><th>Máximo</th></tr></thead>
+                        <tbody>
+                        <tr><td>TA sistólica (mmHg)</td><td><input type="number" name="taSistolicaMin" th:value="${c.taSistolicaMin}"></td><td><input type="number" name="taSistolicaMax" th:value="${c.taSistolicaMax}"></td></tr>
+                        <tr><td>TA diastólica (mmHg)</td><td><input type="number" name="taDiastolicaMin" th:value="${c.taDiastolicaMin}"></td><td><input type="number" name="taDiastolicaMax" th:value="${c.taDiastolicaMax}"></td></tr>
+                        <tr><td>Frecuencia cardiaca (lpm)</td><td><input type="number" name="fcMin" th:value="${c.fcMin}"></td><td><input type="number" name="fcMax" th:value="${c.fcMax}"></td></tr>
+                        <tr><td>Frecuencia respiratoria (rpm)</td><td><input type="number" name="frMin" th:value="${c.frMin}"></td><td><input type="number" name="frMax" th:value="${c.frMax}"></td></tr>
+                        <tr><td>Temperatura (°C)</td><td><input type="number" step="0.1" name="temperaturaMin" th:value="${c.temperaturaMin}"></td><td><input type="number" step="0.1" name="temperaturaMax" th:value="${c.temperaturaMax}"></td></tr>
+                        <tr><td>Saturación O₂ (%)</td><td><input type="number" name="saturacionMin" th:value="${c.saturacionMin}"></td><td class="sub">—</td></tr>
+                        <tr><td>Glucometría (mg/dL)</td><td><input type="number" name="glucometriaMin" th:value="${c.glucometriaMin}"></td><td><input type="number" name="glucometriaMax" th:value="${c.glucometriaMax}"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="panel"><div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar parámetros</button></div></div>
+    </form>
+</main>
+</body>
+</html>

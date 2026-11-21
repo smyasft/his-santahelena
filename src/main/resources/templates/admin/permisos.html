@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Permisos por rol', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Matriz de permisos (RBAC)</h1>
+        <div class="ruta">Marque los módulos que cada rol puede usar. El sistema valida el permiso en cada petición.</div>
+    </div>
+    <form th:action="@{/admin/permisos}" method="post" data-confirmar="¿Aplicar los cambios en los permisos?">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-grid-3x3"></i> Roles × Módulos</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla matriz">
+                    <thead><tr><th>Rol</th><th class="mod" th:each="m : ${modulos}" th:text="${m.nombre}"></th></tr></thead>
+                    <tbody>
+                    <tr th:each="r : ${roles}">
+                        <td><b th:text="${r.nombre}"></b></td>
+                        <td class="c" th:each="m : ${modulos}">
+                            <input type="checkbox" th:name="${'p_' + r.name() + '_' + m.name()}" value="si" th:checked="${matriz.get(r.name()).contains(m.name())}">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pie"><span class="ayuda" style="margin-right:auto">El rol Administrador siempre conserva Seguridad y Configuración.</span><button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar matriz</button></div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

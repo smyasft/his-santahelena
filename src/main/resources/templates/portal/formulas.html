@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Mis fórmulas', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Fórmulas médicas</h1></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha</th><th>Medicamentos</th><th>Médico</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="f : ${lista}">
+                    <td th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy')}"></td>
+                    <td><div th:each="it : ${f.items}" th:text="${it.nombre + ' — ' + it.dosis + ' ' + it.frecuencia}"></div></td>
+                    <td th:text="${f.medicoNombre}"></td>
+                    <td th:text="${#temporals.format(f.venceEn, 'dd/MM/yyyy')}"></td>
+                    <td><span th:replace="~{fragmentos :: estado(${f.vencida() and f.estado == 'ACTIVA' ? 'VENCIDA' : f.estado})}"></span></td>
+                    <td class="acc"><a class="btn chico primario" th:href="@{/portal/formulas/{id}(id=${f.id})}"><i class="bi bi-download"></i> Ver / descargar</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No tiene fórmulas')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

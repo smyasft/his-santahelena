@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Consentimiento informado', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina"><h1>Consentimiento informado</h1><div class="ruta">Ley 23 de 1981 · Resolución 1995 de 1999</div></div>
+    <form th:action="@{/especialista/consentimientos}" method="post">
+        <input type="hidden" name="pacienteId" th:value="${p.id}">
+        <div class="grid g2">
+            <div class="panel">
+                <div class="cab"><i class="bi bi-clipboard2-heart"></i> Procedimiento</div>
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Procedimiento <span class="req">*</span></label><input type="text" name="procedimiento" required></div>
+                        <div class="campo todo"><label>Descripción y beneficios</label><textarea name="descripcion"></textarea></div>
+                        <div class="campo todo"><label>Riesgos explicados <span class="req">*</span></label><textarea name="riesgos" required></textarea></div>
+                        <div class="campo todo"><label>Alternativas</label><textarea name="alternativas"></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-pen"></i> Decisión y firmas</div>
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Decisión <span class="req">*</span></label>
+                            <div style="display:flex;gap:18px"><label class="check"><input type="radio" name="decision" value="SI"> Acepta el procedimiento</label><label class="check"><input type="radio" name="decision" value="NO"> No acepta</label></div>
+                        </div>
+                        <div class="campo"><label>Nombre de quien firma <span class="req">*</span></label><input type="text" name="firmanteNombre" th:value="${p.edad() >= 18 ? p.nombreCompleto() : p.acompananteNombre}" required></div>
+                        <div class="campo"><label>Documento <span class="req">*</span></label><input type="text" name="firmanteDocumento" th:value="${p.edad() >= 18 ? p.numeroDocumento : ''}" required></div>
+                        <div class="campo"><label>Calidad</label>
+                            <select name="parentesco"><option th:selected="${p.edad() >= 18}">Paciente</option><option th:selected="${p.edad() < 18}">Representante legal</option><option>Familiar</option></select></div>
+                        <div class="campo"><label>Testigo</label><input type="text" name="testigo"></div>
+                        <div class="campo todo"><label class="check"><input type="checkbox" name="confirmaLectura" value="si"> Confirmo que el paciente o su representante recibió la explicación, entendió los riesgos y resolvió sus dudas.</label></div>
+                    </div>
+                </div>
+                <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Registrar e imprimir</button></div>
+            </div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

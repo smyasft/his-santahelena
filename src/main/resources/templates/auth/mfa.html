@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Segundo factor · HIS Santa Helena</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/his.css}">
+</head>
+<body class="login">
+<div class="login-lado">
+    <span class="logo"><i class="bi bi-heart-pulse-fill"></i></span>
+    <h1>Verificación en dos pasos</h1>
+    <p>Su rol exige un segundo factor. Use Google Authenticator, Microsoft Authenticator o cualquier app compatible con TOTP.</p>
+</div>
+<div class="login-form">
+    <div class="login-caja">
+        <h2><i class="bi bi-shield-lock"></i> Código de verificación</h2>
+        <div class="aviso error" th:if="${error != null}"><i class="bi bi-exclamation-octagon-fill"></i><div th:text="${error}"></div></div>
+        <div th:if="${secreto != null}">
+            <div class="sub">Primera vez: escanee el código QR o escriba la clave en su aplicación.</div>
+            <div class="qr" id="qr" th:attr="data-uri=${otpUri}"></div>
+            <div class="secreto" th:text="${secreto}">ABCD EFGH</div>
+            <p class="ayuda">Cuenta: HIS Santa Helena · Tipo: basada en tiempo (30 s)</p>
+        </div>
+        <div class="sub" th:if="${secreto == null}">Escriba el código de 6 dígitos que muestra su aplicación.</div>
+        <form th:action="@{/mfa}" method="post" autocomplete="off">
+            <div class="campo">
+                <label for="codigo">Código</label>
+                <input type="text" id="codigo" name="codigo" inputmode="numeric" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus
+                       style="font-size:22px;letter-spacing:6px;text-align:center">
+            </div>
+            <button class="btn primario" type="submit"><i class="bi bi-check2-circle"></i> Verificar</button>
+        </form>
+        <form th:action="@{/logout}" method="post" style="margin-top:10px;text-align:center">
+            <button class="btn enlace" type="submit">Cancelar y salir</button>
+        </form>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script th:src="@{/js/his.js}"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Consentimientos', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Consentimientos informados</h1></div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-person-plus"></i> Nuevo consentimiento</div>
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/especialista/consentimientos}" method="get">
+                <div class="campo"><label>Buscar paciente</label><input type="search" name="q" th:value="${q}"></div>
+                <button class="btn" type="submit"><i class="bi bi-search"></i> Buscar</button>
+            </form>
+        </div>
+        <div class="cuerpo sin" th:if="${!#lists.isEmpty(resultados)}">
+            <table class="tabla"><tbody>
+            <tr th:each="p : ${resultados}">
+                <td><b th:text="${p.nombreCompleto()}"></b> <span class="sub" th:text="${p.documentoTexto() + ' · ' + p.edadTexto()}"></span></td>
+                <td class="acc"><a class="btn chico primario" th:href="@{/especialista/consentimientos/nuevo(pacienteId=${p.id})}"><i class="bi bi-pen"></i> Diligenciar</a></td>
+            </tr>
+            </tbody></table>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-files"></i> Registrados</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha</th><th>Paciente</th><th>Procedimiento</th><th>Decisión</th><th>Firmante</th><th>Especialista</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${lista}">
+                    <td th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${c.pacienteNombre}"></td>
+                    <td th:text="${c.procedimiento}"></td>
+                    <td><span class="estado" th:classappend="${c.acepta ? 'e-VALIDADA' : 'e-RECHAZADA'}" th:text="${c.acepta ? 'Acepta' : 'No acepta'}"></span></td>
+                    <td th:text="${c.firmanteNombre + ' (' + (c.parentesco != null ? c.parentesco : 'Paciente') + ')'}"></td>
+                    <td class="sub" th:text="${c.especialistaNombre}"></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/especialista/consentimientos/{id}/imprimir(id=${c.id})}"><i class="bi bi-printer"></i></a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('Sin consentimientos')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

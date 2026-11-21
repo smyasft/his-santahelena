@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Historia clínica', ~{::main})}">
+<body>
+<main data-recargar="90">
+    <div class="titulo-pagina">
+        <h1>Mi agenda clínica</h1>
+        <div class="ruta" th:text="${yo.nombre + ' · ' + (yo.especialidad != null ? yo.especialidad : 'Medicina General') + (yo.registroMedico != null ? ' · ' + yo.registroMedico : '')}"></div>
+        <div class="acciones"><a class="btn" th:href="@{/hce/buscar}"><i class="bi bi-search"></i> Buscar historia</a></div>
+    </div>
+    <div class="panel" th:if="${!#lists.isEmpty(borradores)}">
+        <div class="cab" style="color:var(--naranja)"><i class="bi bi-pencil-square"></i> Registros sin firmar</div>
+        <div class="cuerpo sin">
+            <table class="tabla"><tbody>
+            <tr th:each="b : ${borradores}">
+                <td><b th:text="${b.pacienteNombre}"></b><div class="sub" th:text="${b.tipo + ' · abierto ' + #temporals.format(b.fecha, 'dd/MM HH:mm')}"></div></td>
+                <td class="acc"><a class="btn chico aviso" th:href="@{/hce/atencion/{id}(id=${b.id})}">Continuar y firmar</a></td>
+            </tr>
+            </tbody></table>
+        </div>
+    </div>
+    <div class="grid g2">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-truck-front"></i> Urgencias clasificadas</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla" th:if="${!#lists.isEmpty(urgencias)}">
+                    <tbody>
+                    <tr th:each="a : ${urgencias}">
+                        <td style="width:50px"><span th:replace="~{fragmentos :: triaje(${a.triajeNivel})}"></span></td>
+                        <td><b th:text="${a.pacienteNombre}"></b><div class="sub" th:text="${a.motivo}"></div>
+                            <div class="sub" th:text="${'Llegó ' + #temporals.format(a.fechaIngreso, 'HH:mm') + ' · ' + a.estado}"></div></td>
+                        <td class="acc">
+                            <form th:action="@{/hce/atencion/nueva}" method="post" class="en-linea">
+                                <input type="hidden" name="pacienteId" th:value="${a.pacienteId}">
+                                <input type="hidden" name="admisionId" th:value="${a.id}">
+                                <button class="btn chico primario" type="submit" th:text="${a.estado == 'EN_ATENCION' ? 'Nueva nota' : 'Atender'}">Atender</button>
+                            </form>
+                            <a class="btn chico" th:href="@{/hce/historia/{id}(id=${a.pacienteId})}">Historia</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(urgencias)}"><div th:replace="~{fragmentos :: vacio('No hay pacientes clasificados en espera')}"></div></th:block>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-calendar-day"></i> Consulta externa de hoy</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla" th:if="${!#lists.isEmpty(citas)}">
+                    <tbody>
+                    <tr th:each="c : ${citas}">
+                        <td style="width:60px"><b th:text="${#temporals.format(c.fechaHora, 'HH:mm')}"></b></td>
+                        <td><b th:text="${c.pacienteNombre}"></b><div class="sub" th:text="${c.pacienteDocumento + ' · ' + c.tipo}"></div></td>
+                        <td><span th:replace="~{fragmentos :: estado(${c.estado})}"></span></td>
+                        <td class="acc">
+                            <form th:if="${c.estado == 'ASIGNADA'}" th:action="@{/hce/atencion/nueva}" method="post" class="en-linea">
+                                <input type="hidden" name="pacienteId" th:value="${c.pacienteId}">
+                                <input type="hidden" name="citaId" th:value="${c.id}">
+                                <button class="btn chico primario" type="submit">Atender</button>
+                            </form>
+                            <a class="btn chico" th:href="@{/hce/historia/{id}(id=${c.pacienteId})}">Historia</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(citas)}"><div th:replace="~{fragmentos :: vacio('Sin citas para hoy')}"></div></th:block>
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-hospital"></i> Pacientes hospitalizados</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(hospitalizados)}">
+                <thead><tr><th>Cama</th><th>Paciente</th><th>Servicio</th><th>Diagnóstico</th><th>Ingreso</th><th>Egreso</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${hospitalizados}">
+                    <td><b th:text="${a.camaCodigo}"></b></td>
+                    <td th:text="${a.pacienteNombre}"></td>
+                    <td th:text="${a.servicio}"></td>
+                    <td th:text="${a.motivo}"></td>
+                    <td th:text="${#temporals.format(a.fechaIngreso, 'dd/MM/yyyy')}"></td>
+                    <td><span class="chip verde" th:if="${a.ordenEgreso}">Con orden</span></td>
+                    <td class="acc">
+                        <form th:action="@{/hce/atencion/nueva}" method="post" class="en-linea">
+                            <input type="hidden" name="pacienteId" th:value="${a.pacienteId}">
+                            <input type="hidden" name="admisionId" th:value="${a.id}">
+                            <input type="hidden" name="tipo" value="EVOLUCION">
+                            <button class="btn chico primario" type="submit">Evolución</button>
+                        </form>
+                        <a class="btn chico" th:href="@{/hce/historia/{id}(id=${a.pacienteId})}">Historia</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(hospitalizados)}"><div th:replace="~{fragmentos :: vacio('Sin pacientes hospitalizados')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

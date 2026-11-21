@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Fórmula médica', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1>Fórmula médica electrónica</h1>
+        <div class="ruta">Revise alertas antes de firmar. Los medicamentos de control especial exigen justificación clínica.</div>
+    </div>
+    <div class="panel" th:if="${!#lists.isEmpty(activas)}">
+        <div class="cab"><i class="bi bi-capsule"></i> Medicamentos activos del paciente</div>
+        <div class="cuerpo"><span class="chip" th:each="pr : ${activas}"><th:block th:each="it : ${pr.items}" th:text="${it.nombre + ' · '}"></th:block></span></div>
+    </div>
+    <form th:action="@{/hce/prescripcion}" method="post" autocomplete="off">
+        <input type="hidden" name="pacienteId" th:value="${p.id}">
+        <input type="hidden" name="atencionId" th:value="${atencionId}">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-prescription2"></i> Medicamentos</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla">
+                    <thead><tr><th style="min-width:240px">Medicamento</th><th>Dosis</th><th>Vía</th><th>Frecuencia</th><th style="width:70px">Días</th><th style="width:80px">Cantidad</th><th>Justificación (control especial)</th></tr></thead>
+                    <tbody>
+                    <tr th:each="i : ${filas}">
+                        <td><select th:name="${'med_' + i}">
+                            <option value="">—</option>
+                            <option th:each="m : ${medicamentos}" th:value="${m.id}" th:text="${m.nombre + (m.controlEspecial ? ' ⚠ CONTROL' : '')}" th:selected="${f.get('med_' + i) == m.id}"></option>
+                        </select></td>
+                        <td><input type="text" th:name="${'dosis_' + i}" th:value="${f.get('dosis_' + i)}" placeholder="1 tableta"></td>
+                        <td><select th:name="${'via_' + i}"><option th:each="v : ${ {'Oral','Intravenosa','Intramuscular','Subcutánea','Inhalada','Tópica','Sublingual'} }" th:text="${v}" th:selected="${f.get('via_' + i) == v}"></option></select></td>
+                        <td><input type="text" th:name="${'frecuencia_' + i}" th:value="${f.get('frecuencia_' + i)}" placeholder="Cada 8 horas"></td>
+                        <td><input type="number" th:name="${'dias_' + i}" th:value="${f.get('dias_' + i)}" min="0"></td>
+                        <td><input type="number" th:name="${'cantidad_' + i}" th:value="${f.get('cantidad_' + i)}" min="0"></td>
+                        <td><input type="text" th:name="${'just_' + i}" th:value="${f.get('just_' + i)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel" th:if="${revisada != null}">
+            <div class="cab" th:style="${#lists.isEmpty(alertas) ? '' : 'color:var(--rojo)'}"><i class="bi bi-shield-exclamation"></i> Revisión de seguridad</div>
+            <div class="cuerpo">
+                <div class="aviso ok" th:if="${#lists.isEmpty(alertas)}"><i class="bi bi-check-circle-fill"></i><div>Sin alergias, interacciones ni duplicidades detectadas.</div></div>
+                <div class="aviso error" th:unless="${#lists.isEmpty(alertas)}"><i class="bi bi-exclamation-octagon-fill"></i><div><b>Alertas detectadas:</b><ul><li th:each="x : ${alertas}" th:text="${x}"></li></ul></div></div>
+                <div class="campo" th:unless="${#lists.isEmpty(alertas)}"><label>Justificación clínica para continuar <span class="req">*</span></label><textarea name="justificacion" th:text="${f.get('justificacion')}"></textarea></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="pie">
+                <a class="btn" th:href="@{${atencionId != null ? '/hce/atencion/' + atencionId : '/hce/historia/' + p.id}}">Cancelar</a>
+                <button class="btn" type="submit" name="accion" value="revisar"><i class="bi bi-shield-check"></i> Revisar alertas</button>
+                <button class="btn exito" type="submit" name="accion" value="firmar"><i class="bi bi-pen"></i> Firmar fórmula</button>
+            </div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

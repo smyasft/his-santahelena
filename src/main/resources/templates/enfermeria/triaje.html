@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Triaje', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1>Clasificación de triaje</h1>
+        <div class="ruta">Resolución 5596 de 2015 · El sistema sugiere el nivel según los signos; la decisión final es de enfermería.</div>
+        <div class="acciones"><a class="btn" th:href="@{/enfermeria}"><i class="bi bi-arrow-left"></i> Volver a la cola</a></div>
+    </div>
+    <form th:action="@{/enfermeria/triaje/{id}(id=${a.id})}" method="post" autocomplete="off">
+        <div class="grid g-7-5">
+            <div class="panel">
+                <div class="cab"><i class="bi bi-heart-pulse"></i> Signos vitales</div>
+                <div class="cuerpo">
+                    <div class="campos">
+                        <div class="campo"><label>TA sistólica <span class="req">*</span></label><input type="number" name="taSistolica" th:value="${s.taSistolica}" placeholder="mmHg"></div>
+                        <div class="campo"><label>TA diastólica</label><input type="number" name="taDiastolica" th:value="${s.taDiastolica}" placeholder="mmHg"></div>
+                        <div class="campo"><label>Frec. cardiaca <span class="req">*</span></label><input type="number" name="fc" th:value="${s.fc}" placeholder="lpm"></div>
+                        <div class="campo"><label>Frec. respiratoria <span class="req">*</span></label><input type="number" name="fr" th:value="${s.fr}" placeholder="rpm"></div>
+                        <div class="campo"><label>Temperatura <span class="req">*</span></label><input type="number" step="0.1" name="temperatura" th:value="${s.temperatura}" placeholder="°C"></div>
+                        <div class="campo"><label>Saturación O₂ <span class="req">*</span></label><input type="number" name="saturacion" th:value="${s.saturacion}" placeholder="%"></div>
+                        <div class="campo"><label>Glucometría</label><input type="number" name="glucometria" th:value="${s.glucometria}" placeholder="mg/dL"></div>
+                        <div class="campo"></div>
+                        <div class="campo todo"><label>Motivo de consulta</label><textarea name="motivo" th:text="${motivo}"></textarea></div>
+                    </div>
+                    <div class="aviso alerta" th:if="${alertasSignos != null and !#lists.isEmpty(alertasSignos)}" style="margin-top:12px">
+                        <i class="bi bi-exclamation-triangle-fill"></i><div><b>Signos fuera de rango:</b><ul><li th:each="x : ${alertasSignos}" th:text="${x}"></li></ul></div>
+                    </div>
+                </div>
+                <div class="pie"><button class="btn" type="submit" name="accion" value="sugerir"><i class="bi bi-magic"></i> Calcular nivel sugerido</button></div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-list-ol"></i> Nivel de triaje</div>
+                <div class="cuerpo">
+                    <div class="aviso info" th:if="${sugerido != null}"><i class="bi bi-lightbulb"></i><div>Nivel sugerido por los signos: <b th:text="${sugerido}"></b>. Puede confirmarlo o cambiarlo.</div></div>
+                    <div class="niveles">
+                        <label class="nivel-op" th:each="n : ${ {1,2,3,4,5} }">
+                            <input type="radio" name="nivel" th:value="${n}" th:checked="${nivelElegido != null ? nivelElegido == n : sugerido == n}">
+                            <span th:class="${'t' + n}" th:classappend="${sugerido == n} ? 'sugerido'">
+                                <span th:text="${ {'','I','II','III','IV','V'}[n] }"></span>
+                                <small th:text="${ {'','Resucitación','Emergencia','Urgencia','Menor','No urgente'}[n] }"></small>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="campo" style="margin-top:12px"><label>Justificación (si asigna menor prioridad que la sugerida)</label><textarea name="justificacion" th:text="${justificacion}"></textarea></div>
+                </div>
+                <div class="pie"><button class="btn exito" type="submit" name="accion" value="guardar"><i class="bi bi-check2-circle"></i> Guardar triaje</button></div>
+            </div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

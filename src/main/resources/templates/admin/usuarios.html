@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Usuarios', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Gestión de usuarios</h1>
+        <div class="ruta">Seguridad y Configuración › Usuarios</div>
+        <div class="acciones"><a class="btn primario" th:href="@{/admin/usuarios/nuevo}"><i class="bi bi-person-plus"></i> Nuevo usuario</a></div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/admin/usuarios}" method="get">
+                <div class="campo"><label>Buscar</label><input type="search" name="q" th:value="${q}" placeholder="Nombre, usuario o documento"></div>
+                <div class="campo corto"><label>Rol</label>
+                    <select name="rol"><option value="">Todos</option>
+                        <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.nombre}" th:selected="${rolSel == r.name()}"></option>
+                    </select>
+                </div>
+                <button class="btn" type="submit"><i class="bi bi-search"></i> Filtrar</button>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-people"></i> Usuarios <span class="der" th:text="${#lists.size(lista) + ' registro(s)'}"></span></div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla">
+                <thead><tr><th>Usuario</th><th>Nombre</th><th>Documento</th><th>Roles</th><th>Estado</th><th>MFA</th><th>Último acceso</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="u : ${lista}">
+                    <td><b th:text="${u.username}"></b></td>
+                    <td th:text="${u.nombre}"><br></td>
+                    <td th:text="${u.documento}"></td>
+                    <td th:text="${u.rolesTexto()}"></td>
+                    <td>
+                        <span class="estado e-BLOQUEADA" th:if="${u.bloqueado()}">Bloqueado</span>
+                        <span class="estado" th:unless="${u.bloqueado()}" th:classappend="${u.activo ? 'e-ACTIVO' : 'e-INACTIVO'}" th:text="${u.activo ? 'Activo' : 'Inactivo'}"></span>
+                    </td>
+                    <td><i class="bi" th:classappend="${u.mfaConfigurado ? 'bi-shield-check' : 'bi-dash'}" th:title="${u.mfaConfigurado ? 'Configurado' : 'Sin configurar'}"></i></td>
+                    <td class="sub" th:text="${u.ultimoAcceso != null ? #temporals.format(u.ultimoAcceso, 'dd/MM/yyyy HH:mm') : 'Nunca'}"></td>
+                    <td class="acc">
+                        <a class="btn chico" th:href="@{/admin/usuarios/{id}(id=${u.id})}"><i class="bi bi-pencil"></i> Editar</a>
+                        <form th:if="${u.bloqueado()}" th:action="@{/admin/usuarios/{id}/desbloquear(id=${u.id})}" method="post" class="en-linea">
+                            <button class="btn chico aviso" type="submit"><i class="bi bi-unlock"></i> Desbloquear</button>
+                        </form>
+                        <form th:action="@{/admin/usuarios/{id}/estado(id=${u.id})}" method="post" class="en-linea" data-confirmar="¿Cambiar el estado del usuario?">
+                            <button class="btn chico" type="submit" th:text="${u.activo ? 'Desactivar' : 'Activar'}"></button>
+                        </form>
+                        <form th:if="${u.mfaConfigurado}" th:action="@{/admin/usuarios/{id}/reiniciar-mfa(id=${u.id})}" method="post" class="en-linea" data-confirmar="El usuario deberá configurar de nuevo su autenticador. ¿Continuar?">
+                            <button class="btn chico" type="submit" title="Reiniciar segundo factor"><i class="bi bi-arrow-repeat"></i> MFA</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

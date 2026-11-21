@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Mi perfil', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Mi perfil</h1></div>
+    <div class="grid g2">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-person-badge"></i> Datos del usuario</div>
+            <div class="cuerpo">
+                <table class="tabla">
+                    <tr><td class="sub">Usuario</td><td><b th:text="${yo.username}"></b></td></tr>
+                    <tr><td class="sub">Nombre</td><td th:text="${yo.nombre}"></td></tr>
+                    <tr><td class="sub">Documento</td><td th:text="${yo.documento}"></td></tr>
+                    <tr><td class="sub">Correo</td><td th:text="${yo.email}"></td></tr>
+                    <tr><td class="sub">Roles</td><td th:text="${yo.rolesTexto()}"></td></tr>
+                    <tr th:if="${yo.especialidad != null}"><td class="sub">Especialidad</td><td th:text="${yo.especialidad}"></td></tr>
+                    <tr th:if="${yo.registroMedico != null}"><td class="sub">Registro profesional</td><td th:text="${yo.registroMedico}"></td></tr>
+                    <tr><td class="sub">Segundo factor</td><td th:text="${yo.mfaConfigurado ? 'Configurado' : 'No configurado'}"></td></tr>
+                    <tr><td class="sub">Último acceso</td><td th:text="${yo.ultimoAcceso != null ? #temporals.format(yo.ultimoAcceso, 'dd/MM/yyyy HH:mm') : '—'}"></td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-key"></i> Cambiar contraseña</div>
+            <form th:action="@{/perfil/clave}" method="post">
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Contraseña actual</label><input type="password" name="actual" required></div>
+                        <div class="campo"><label>Nueva</label><input type="password" name="nueva" required></div>
+                        <div class="campo"><label>Confirmar</label><input type="password" name="confirmar" required></div>
+                        <div class="campo todo ayuda">Mínimo 8 caracteres, una mayúscula, un número y un símbolo.</div>
+                    </div>
+                </div>
+                <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar</button></div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Laboratorio', ~{::main})}">
+<body>
+<main data-recargar="60">
+    <div class="titulo-pagina"><h1>Órdenes de laboratorio</h1><div class="ruta">Urgentes primero. Flujo: ordenada → recibida (etiqueta) → resultados → validada.</div></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha</th><th>Prioridad</th><th>Paciente</th><th>Exámenes</th><th>Médico</th><th>Muestra</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="o : ${lista}" th:classappend="${o.prioridad == 'URGENTE'} ? 'fila-aviso'">
+                    <td th:text="${#temporals.format(o.fecha, 'dd/MM HH:mm')}"></td>
+                    <td><span class="chip" th:classappend="${o.prioridad == 'URGENTE'} ? 'rojo'" th:text="${o.prioridad}"></span></td>
+                    <td><b th:text="${o.pacienteNombre}"></b><div class="sub" th:text="${o.pacienteDocumento}"></div></td>
+                    <td th:text="${o.examenesTexto()}"></td>
+                    <td class="sub" th:text="${o.medicoNombre}"></td>
+                    <td th:text="${o.codigoMuestra != null ? o.codigoMuestra : '—'}"></td>
+                    <td><span th:replace="~{fragmentos :: estado(${o.estado})}"></span></td>
+                    <td class="acc">
+                        <form th:if="${o.estado == 'ORDENADA'}" th:action="@{/laboratorio/orden/{id}/recibir(id=${o.id})}" method="post" class="en-linea">
+                            <button class="btn chico primario" type="submit"><i class="bi bi-upc-scan"></i> Recibir muestra</button>
+                        </form>
+                        <a th:if="${o.estado != 'ORDENADA'}" class="btn chico" th:href="@{/laboratorio/orden/{id}/etiqueta(id=${o.id})}"><i class="bi bi-upc"></i></a>
+                        <a th:if="${o.estado == 'RECIBIDA' or o.estado == 'RESULTADOS'}" class="btn chico exito" th:href="@{/laboratorio/orden/{id}(id=${o.id})}"
+                           th:text="${o.estado == 'RECIBIDA' ? 'Resultados' : 'Revisar y validar'}"></a>
+                        <form th:if="${o.estado == 'ORDENADA' or o.estado == 'RECIBIDA'}" th:action="@{/laboratorio/orden/{id}/rechazar(id=${o.id})}" method="post" class="en-linea">
+                            <select name="motivo" style="min-height:26px;width:auto;font-size:12px">
+                                <option value="">Rechazar…</option><option>Muestra hemolizada</option><option>Muestra insuficiente</option><option>Mal rotulada</option><option>Tubo incorrecto</option><option>Muestra coagulada</option>
+                            </select>
+                            <button class="btn chico peligro" type="submit" data-confirmar="¿Rechazar la muestra? Se notificará al médico."><i class="bi bi-x"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay órdenes pendientes')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

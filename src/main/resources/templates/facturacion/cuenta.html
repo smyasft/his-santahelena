@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Cuenta del paciente', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${'Cuenta · ' + c.pacienteNombre}">Cuenta</h1>
+        <span th:replace="~{fragmentos :: estado(${c.estado})}"></span>
+        <span class="chip" th:text="${c.epsNombre}"></span>
+        <div class="acciones">
+            <a class="btn" th:href="@{/facturacion}"><i class="bi bi-arrow-left"></i> Cuentas</a>
+            <a class="btn" th:if="${c.facturaId != null}" th:href="@{/facturacion/factura/{id}(id=${c.facturaId})}"><i class="bi bi-file-earmark-text"></i> Factura <span th:text="${c.facturaNumero}"></span></a>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-list-ul"></i> Detalle de cargos</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla">
+                <thead><tr><th>Fecha</th><th>Código</th><th>Descripción</th><th>Origen</th><th class="num">Cant.</th><th class="num">Valor unitario</th><th class="num">Total</th></tr></thead>
+                <tbody>
+                <tr th:each="g : ${c.cargos}">
+                    <td th:text="${#temporals.format(g.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${g.codigo}"></td>
+                    <td th:text="${g.descripcion}"></td>
+                    <td><span class="chip" th:text="${g.origen}"></span></td>
+                    <td class="num" th:text="${g.cantidad}"></td>
+                    <td class="num" th:text="${'$ ' + #numbers.formatDecimal(g.valorUnitario, 1, 'POINT', 0, 'COMMA')}"></td>
+                    <td class="num" th:text="${'$ ' + #numbers.formatDecimal(g.valorTotal, 1, 'POINT', 0, 'COMMA')}"></td>
+                </tr>
+                </tbody>
+                <tfoot><tr><td colspan="6">TOTAL</td><td class="num" th:text="${'$ ' + #numbers.formatDecimal(c.total(), 1, 'POINT', 0, 'COMMA')}"></td></tr></tfoot>
+            </table>
+        </div>
+        <div class="pie" th:if="${c.estado == 'ABIERTA'}">
+            <span class="ayuda" style="margin-right:auto">Las tarifas aplican el factor del convenio vigente al momento del cargo.</span>
+            <form th:action="@{/facturacion/cuenta/{id}/facturar(id=${c.id})}" method="post" data-confirmar="Se emitirá la factura electrónica y la cuenta quedará cerrada. ¿Continuar?">
+                <button class="btn exito" type="submit"><i class="bi bi-file-earmark-check"></i> Emitir factura electrónica</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

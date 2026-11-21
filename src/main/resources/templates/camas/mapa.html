@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Mapa de camas', ~{::main})}">
+<body>
+<main data-recargar="60">
+    <div class="titulo-pagina">
+        <h1>Mapa de camas</h1>
+        <div class="acciones leyenda">
+            <span><i style="background:var(--verde)"></i>Libre</span><span><i style="background:#6a42b5"></i>Ocupada</span>
+            <span><i style="background:var(--naranja)"></i>Limpieza</span><span><i style="background:var(--rojo)"></i>Bloqueada</span>
+        </div>
+    </div>
+    <div class="indicadores">
+        <div class="indicador"><span class="ic"><i class="bi bi-pie-chart"></i></span><span><span class="t">Ocupación</span><br><span class="v" th:text="${ocupacion + ' %'}"></span></span></div>
+        <div class="indicador verde"><span class="ic"><i class="bi bi-check2-circle"></i></span><span><span class="t">Libres</span><br><span class="v" th:text="${libres}"></span></span></div>
+        <div class="indicador"><span class="ic"><i class="bi bi-person-fill"></i></span><span><span class="t">Ocupadas</span><br><span class="v" th:text="${ocupadas}"></span></span></div>
+        <a class="indicador naranja" th:href="@{/camas/pendientes}"><span class="ic"><i class="bi bi-hourglass-split"></i></span><span><span class="t">Pendientes de cama</span><br><span class="v" th:text="${pendientes}"></span></span></a>
+    </div>
+    <div class="panel" th:each="sv : ${servicios}">
+        <div class="cab"><i class="bi bi-hospital"></i> <span th:text="${sv.key}"></span> <span class="der" th:text="${#lists.size(sv.value) + ' camas'}"></span></div>
+        <div class="cuerpo">
+            <div class="camas">
+                <div class="cama" th:each="c : ${sv.value}" th:classappend="${c.estado}">
+                    <div class="cod"><i class="bi" th:classappend="${c.estado == 'OCUPADA' ? 'bi-person-fill' : (c.estado == 'LIMPIEZA' ? 'bi-stars' : (c.estado == 'BLOQUEADA' ? 'bi-slash-circle' : 'bi-check-circle'))}"></i><span th:text="${c.codigo}"></span></div>
+                    <div class="r" th:text="${'Hab. ' + c.habitacion + ' · ' + c.restriccionTexto()}"></div>
+                    <span th:replace="~{fragmentos :: estado(${c.estado})}"></span>
+                    <div class="pac" th:if="${c.pacienteNombre != null}" th:text="${c.pacienteNombre}"></div>
+                    <div class="r" th:if="${c.estado == 'OCUPADA' and admPorCama.get(c.id) != null}">
+                        <span th:text="${'Desde ' + #temporals.format(c.desde, 'dd/MM HH:mm')}"></span>
+                        <span class="chip verde" th:if="${admPorCama.get(c.id).ordenEgreso}">Orden de egreso</span>
+                    </div>
+                    <div class="r" th:if="${c.motivoBloqueo != null}" th:text="${c.motivoBloqueo}"></div>
+                    <div class="acc">
+                        <a th:if="${c.estado == 'OCUPADA' and c.admisionId != null}" class="btn chico primario" th:href="@{/camas/admision/{id}(id=${c.admisionId})}">Gestionar</a>
+                        <form th:if="${c.estado == 'LIMPIEZA'}" th:action="@{/camas/cama/{id}/estado(id=${c.id})}" method="post" class="en-linea">
+                            <input type="hidden" name="estado" value="LIBRE"><button class="btn chico exito" type="submit">Limpia</button>
+                        </form>
+                        <form th:if="${c.estado == 'BLOQUEADA'}" th:action="@{/camas/cama/{id}/estado(id=${c.id})}" method="post" class="en-linea">
+                            <input type="hidden" name="estado" value="LIBRE"><button class="btn chico" type="submit">Desbloquear</button>
+                        </form>
+                        <form th:if="${c.estado == 'LIBRE'}" th:action="@{/camas/cama/{id}/estado(id=${c.id})}" method="post" style="display:flex;gap:4px;width:100%">
+                            <input type="hidden" name="estado" value="BLOQUEADA">
+                            <input type="text" name="motivo" placeholder="Motivo" style="min-height:26px;font-size:12px">
+                            <button class="btn chico" type="submit" title="Bloquear"><i class="bi bi-lock"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

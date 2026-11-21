@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Mis citas', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Mis citas</h1></div>
+    <div class="grid g-7-5">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-calendar-week"></i> Historial y próximas</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                    <thead><tr><th>Fecha</th><th>Profesional</th><th>Lugar</th><th>Estado</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${lista}">
+                        <td><b th:text="${#temporals.format(c.fechaHora, 'dd/MM/yyyy HH:mm')}"></b></td>
+                        <td th:text="${c.profesionalNombre}"><div class="sub"></div></td>
+                        <td class="sub" th:text="${c.sede + ' · ' + c.consultorio}"></td>
+                        <td><span th:replace="~{fragmentos :: estado(${c.estado})}"></span></td>
+                        <td class="acc">
+                            <form th:if="${cancelables.contains(c.id)}" th:action="@{/portal/citas/{id}/cancelar(id=${c.id})}" method="post" class="en-linea" data-confirmar="¿Desea cancelar esta cita?">
+                                <button class="btn chico peligro" type="submit">Cancelar</button>
+                            </form>
+                            <span class="sub" th:if="${c.estado == 'ASIGNADA' and !cancelables.contains(c.id) and c.fechaHora.isAfter(ahora)}" title="Menos de 24 horas">Llame a la clínica</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('Aún no tiene citas')}"></div></th:block>
+            </div>
+            <div class="pie"><span class="ayuda">Puede cancelar por el portal con mínimo 24 horas de anticipación.</span></div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-calendar-plus"></i> Agendar nueva cita</div>
+            <div class="cuerpo">
+                <form th:action="@{/portal/citas}" method="get">
+                    <div class="campos c2">
+                        <div class="campo s2"><label>Profesional</label>
+                            <select name="agendaId" required>
+                                <option value="">Seleccione</option>
+                                <option th:each="ag : ${agendas}" th:value="${ag.id}" th:text="${ag.profesionalNombre + ' · ' + ag.especialidad + ' (' + ag.diasTexto() + ')'}" th:selected="${agenda != null and agenda.id == ag.id}"></option>
+                            </select>
+                        </div>
+                        <div class="campo"><label>Fecha</label><input type="date" name="fecha" th:value="${fecha}" th:min="${hoy}" required></div>
+                        <div class="campo" style="justify-content:flex-end"><button class="btn" type="submit"><i class="bi bi-search"></i> Ver horarios</button></div>
+                    </div>
+                </form>
+                <div th:if="${agenda != null and fecha != null}" style="margin-top:14px">
+                    <form th:if="${!#lists.isEmpty(franjas)}" th:action="@{/portal/citas/agendar}" method="post">
+                        <input type="hidden" name="agendaId" th:value="${agenda.id}">
+                        <div class="etiqueta" style="margin-bottom:6px">Horarios disponibles</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px">
+                            <button class="btn" type="submit" name="fechaHora" th:each="t : ${franjas}" th:value="${t}" th:text="${#temporals.format(t, 'HH:mm')}"
+                                    th:attr="data-confirmar=${'¿Confirmar su cita a las ' + #temporals.format(t, 'HH:mm') + '?'}"></button>
+                        </div>
+                    </form>
+                    <div class="aviso alerta" th:if="${#lists.isEmpty(franjas)}"><i class="bi bi-calendar-x"></i><div>No hay horarios libres ese día. Pruebe otra fecha.</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

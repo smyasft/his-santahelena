@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Inventario', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Inventario de farmacia</h1><div class="acciones"><a class="btn primario" th:href="@{/farmacia/invima}"><i class="bi bi-cloud-download"></i> Agregar desde INVIMA</a></div></div>
+    <div class="grid g-8-4">
+        <div>
+            <div class="panel">
+                <div class="cuerpo">
+                    <form class="barra-busqueda" th:action="@{/farmacia/inventario}" method="get">
+                        <div class="campo"><label>Buscar</label><input type="search" name="q" th:value="${q}" placeholder="Nombre o CUM"></div>
+                        <div class="campo corto"><label>Filtro</label>
+                            <select name="filtro"><option value="">Todos</option><option value="bajo" th:selected="${filtro == 'bajo'}">Bajo stock mínimo</option><option value="vencer" th:selected="${filtro == 'vencer'}">Vencidos o por vencer</option></select></div>
+                        <button class="btn" type="submit"><i class="bi bi-funnel"></i> Aplicar</button>
+                    </form>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cuerpo sin tabla-cont">
+                    <table class="tabla">
+                        <thead><tr><th>Medicamento</th><th>Grupo</th><th class="num">Stock vigente</th><th class="num">Mínimo</th><th>Lotes (vencimiento · cantidad)</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="fi : ${filas}" th:classappend="${fi.stock < fi.m.stockMinimo} ? 'fila-alerta'">
+                            <td><b th:text="${fi.m.nombre}"></b> <span class="chip rojo" th:if="${fi.m.controlEspecial}">CE</span><div class="sub"><span th:text="${'CUM ' + fi.m.codigoCum}"></span> <span class="chip" th:if="${fi.m.deInvima()}" title="Importado del listado oficial del INVIMA">INVIMA</span></div></td>
+                            <td class="sub" th:text="${fi.m.grupo}"></td>
+                            <td class="num"><b th:text="${fi.stock}"></b></td>
+                            <td class="num" th:text="${fi.m.stockMinimo}"></td>
+                            <td>
+                                <span th:each="l : ${fi.lotes}" class="chip" style="margin:1px" th:classappend="${l.vencido() ? 'rojo' : (l.porVencer() ? '' : 'verde')}"
+                                      th:text="${l.numero + ' · ' + #temporals.format(l.vence, 'MM/yyyy') + ' · ' + l.cantidad}" th:title="${l.vencido() ? 'Vencido: no se dispensa' : (l.porVencer() ? 'Vence en menos de 90 días' : 'Vigente')}"></span>
+                            </td>
+                            <td class="acc"><a class="btn chico" th:href="@{/farmacia/kardex/{id}(id=${fi.m.id})}"><i class="bi bi-journal-text"></i> Kárdex</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-box-arrow-in-down"></i> Ingreso de lote</div>
+            <form th:action="@{/farmacia/lotes}" method="post">
+                <div class="cuerpo">
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Medicamento</label><select name="medicamentoId"><option th:each="m : ${medicamentos}" th:value="${m.id}" th:text="${m.nombre}"></option></select></div>
+                        <div class="campo"><label>Lote</label><input type="text" name="numero" required></div>
+                        <div class="campo"><label>Vence</label><input type="date" name="vence" required></div>
+                        <div class="campo"><label>Cantidad</label><input type="number" name="cantidad" min="1" required></div>
+                        <div class="campo"><label>Proveedor</label><input type="text" name="proveedor"></div>
+                    </div>
+                </div>
+                <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-save"></i> Ingresar</button></div>
+            </form>
+            <div class="cuerpo leyenda"><span><i style="background:var(--verde-claro);border:1px solid var(--verde)"></i>Vigente</span><span><i style="background:var(--azul-100)"></i>Vence &lt; 90 días</span><span><i style="background:var(--rojo-claro);border:1px solid var(--rojo)"></i>Vencido</span></div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

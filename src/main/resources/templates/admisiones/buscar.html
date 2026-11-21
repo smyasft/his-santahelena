@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Admisiones', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Búsqueda de pacientes</h1>
+        <div class="ruta">Admisiones y Citas › Buscar por documento, número de historia o nombre</div>
+        <div class="acciones">
+            <a class="btn primario" th:href="@{/admisiones/paciente/nuevo}"><i class="bi bi-person-plus"></i> Registrar paciente</a>
+            <a class="btn peligro" th:href="@{/admisiones/urgencias}"><i class="bi bi-truck-front"></i> Ingreso a urgencias</a>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/admisiones}" method="get">
+                <div class="campo"><label>Documento, historia o nombre</label><input type="search" name="q" th:value="${q}" autofocus placeholder="Ej: 1098765432, HC-000001 o Rojas Pérez"></div>
+                <button class="btn primario" type="submit"><i class="bi bi-search"></i> Buscar</button>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-people"></i> <span th:text="${q == null or q == '' ? 'Últimos pacientes registrados' : 'Resultados'}"></span></div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Historia</th><th>Documento</th><th>Paciente</th><th>Edad</th><th>EPS</th><th>Derechos</th><th>Alergias</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${lista}">
+                    <td><b th:text="${p.numeroHistoria}"></b></td>
+                    <td th:text="${p.documentoTexto()}"></td>
+                    <td><a th:href="@{/admisiones/paciente/{id}(id=${p.id})}" th:text="${p.nombreCompleto()}"></a></td>
+                    <td th:text="${p.edadTexto()}"></td>
+                    <td th:text="${p.epsNombre}"></td>
+                    <td><span class="estado" th:classappend="${'e-' + (p.derechosEstado != null ? #strings.replace(p.derechosEstado, ' ', '_') : 'NO_VERIFICABLE')}" th:text="${p.derechosEstado != null ? p.derechosEstado : '—'}"></span></td>
+                    <td><span class="chip rojo" th:if="${p.tieneAlergias()}" th:text="${p.alergiasTexto()}"></span></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/admisiones/paciente/{id}(id=${p.id})}"><i class="bi bi-folder2-open"></i> Ficha</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="vacio" th:if="${#lists.isEmpty(lista)}">
+                <i class="bi bi-person-x"></i>No se encontró el paciente.
+                <div style="margin-top:10px"><a class="btn primario" th:href="@{/admisiones/paciente/nuevo(documento=${q})}"><i class="bi bi-person-plus"></i> Registrarlo ahora</a></div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

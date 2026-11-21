@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Resultados de laboratorio', ~{::main})}">
+<body>
+<main>
+    <div th:replace="~{fragmentos :: banner(${p})}"></div>
+    <div class="titulo-pagina">
+        <h1 th:text="${'Muestra ' + (o.codigoMuestra != null ? o.codigoMuestra : '')}">Muestra</h1>
+        <span th:replace="~{fragmentos :: estado(${o.estado})}"></span>
+        <div class="acciones">
+            <a class="btn" th:href="@{/laboratorio}"><i class="bi bi-arrow-left"></i> Órdenes</a>
+            <a class="btn" th:if="${o.estado == 'VALIDADA'}" th:href="@{/laboratorio/orden/{id}/imprimir(id=${o.id})}"><i class="bi bi-printer"></i> Imprimir</a>
+        </div>
+    </div>
+    <div class="aviso info" th:if="${o.observaciones != null}"><i class="bi bi-chat-left-text"></i><div th:text="${'Datos clínicos: ' + o.observaciones}"></div></div>
+    <form th:action="@{/laboratorio/orden/{id}/resultados(id=${o.id})}" method="post" autocomplete="off">
+        <div class="panel" th:each="e, ie : ${catalogo}">
+            <div class="cab"><i class="bi bi-eyedropper"></i> <span th:text="${e.codigo + ' · ' + e.nombre}"></span> <span class="der" th:text="${e.muestra}"></span></div>
+            <div class="cuerpo sin">
+                <table class="tabla">
+                    <thead><tr><th>Analito</th><th style="width:160px">Resultado</th><th>Unidad</th><th>Referencia</th><th>Crítico</th><th>Interpretación</th></tr></thead>
+                    <tbody>
+                    <tr th:each="an, ia : ${e.analitos}"
+                        th:with="r=${#lists.size(o.examenes[ie.index].resultados) > ia.index ? o.examenes[ie.index].resultados[ia.index] : null}"
+                        th:classappend="${r != null and r.critico ? 'fila-alerta' : (r != null and r.fueraRango ? 'fila-aviso' : '')}">
+                        <td><b th:text="${an.nombre}"></b></td>
+                        <td><input type="number" step="any" th:name="${'v_' + ie.index + '_' + ia.index}" th:value="${r != null ? r.valor : ''}" th:readonly="${o.estado == 'VALIDADA'}" required></td>
+                        <td th:text="${an.unidad}"></td>
+                        <td th:text="${an.rango()}"></td>
+                        <td class="sub" th:text="${(an.criticoMin != null ? '< ' + an.criticoMin : '') + (an.criticoMax != null ? ' > ' + an.criticoMax : '')}"></td>
+                        <td>
+                            <span class="chip rojo" th:if="${r != null and r.critico}">CRÍTICO</span>
+                            <span class="chip" th:if="${r != null and r.fueraRango and !r.critico}">Fuera de rango</span>
+                            <span class="chip verde" th:if="${r != null and !r.fueraRango}">Normal</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel" th:if="${o.estado != 'VALIDADA'}">
+            <div class="pie">
+                <button class="btn" type="submit"><i class="bi bi-save"></i> Guardar resultados</button>
+            </div>
+        </div>
+    </form>
+    <form th:if="${o.estado == 'RESULTADOS'}" th:action="@{/laboratorio/orden/{id}/validar(id=${o.id})}" method="post">
+        <div class="panel"><div class="pie">
+            <span class="ayuda" style="margin-right:auto" th:text="${'Resultados cargados por ' + o.resultadosPor + ' · ' + #temporals.format(o.resultadosEn, 'dd/MM HH:mm')}"></span>
+            <button class="btn exito" type="submit" data-confirmar="Al validar, los resultados se publican en la historia clínica y el portal del paciente. ¿Validar?"><i class="bi bi-patch-check"></i> Validar y publicar</button>
+        </div></div>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Facturas', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Facturas emitidas</h1></div>
+    <div class="panel">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/facturacion/facturas}" method="get">
+                <div class="campo"><label>Buscar</label><input type="search" name="q" th:value="${q}" placeholder="Número, paciente, documento o entidad"></div>
+                <button class="btn" type="submit"><i class="bi bi-search"></i> Buscar</button>
+            </form>
+        </div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Número</th><th>Fecha</th><th>Paciente</th><th>Adquirente</th><th class="num">Total</th><th>DIAN</th><th>Pago</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="f : ${lista}">
+                    <td><b th:text="${f.numero}"></b></td>
+                    <td th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${f.pacienteNombre}"></td>
+                    <td th:text="${f.adquirenteNombre}"></td>
+                    <td class="num" th:text="${'$ ' + #numbers.formatDecimal(f.total, 1, 'POINT', 0, 'COMMA')}"></td>
+                    <td class="sub" th:text="${f.estadoDian}"></td>
+                    <td>
+                        <span class="estado e-PAGADA" th:if="${f.pagada}" th:text="${'Pagada · ' + f.formaPago}"></span>
+                        <form th:unless="${f.pagada}" th:action="@{/facturacion/factura/{id}/pago(id=${f.id})}" method="post" style="display:flex;gap:4px">
+                            <select name="formaPago" style="min-height:26px;width:auto;font-size:12px">
+                                <option th:if="${!f.particular}">RADICADA EPS</option><option>EFECTIVO</option><option>TARJETA</option><option>TRANSFERENCIA</option>
+                            </select>
+                            <button class="btn chico" type="submit">Registrar</button>
+                        </form>
+                    </td>
+                    <td class="acc"><a class="btn chico" th:href="@{/facturacion/factura/{id}(id=${f.id})}"><i class="bi bi-printer"></i></a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('Sin facturas')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

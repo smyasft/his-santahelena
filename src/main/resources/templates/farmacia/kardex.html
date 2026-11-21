@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Kárdex', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${'Kárdex · ' + m.nombre}">Kárdex</h1>
+        <span class="chip" th:text="${'Stock vigente: ' + stock}"></span>
+        <div class="acciones"><a class="btn" th:href="@{/farmacia/inventario}"><i class="bi bi-arrow-left"></i> Inventario</a></div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla">
+                <thead><tr><th>Fecha</th><th>Tipo</th><th>Lote</th><th class="num">Cantidad</th><th class="num">Saldo</th><th>Paciente</th><th>Usuario</th><th>Referencia</th></tr></thead>
+                <tbody>
+                <tr th:each="mv : ${movimientos}">
+                    <td th:text="${#temporals.format(mv.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td><span class="estado" th:classappend="${mv.tipo == 'ENTRADA' ? 'e-VALIDADA' : 'e-RECIBIDA'}" th:text="${mv.tipo}"></span></td>
+                    <td th:text="${mv.loteNumero}"></td>
+                    <td class="num" th:text="${mv.cantidad}"></td>
+                    <td class="num"><b th:text="${mv.saldo}"></b></td>
+                    <td th:text="${mv.pacienteNombre != null ? mv.pacienteNombre : '—'}"></td>
+                    <td class="sub" th:text="${mv.usuario}"></td>
+                    <td class="sub" th:text="${mv.referencia}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

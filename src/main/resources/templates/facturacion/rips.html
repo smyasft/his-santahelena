@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('RIPS', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Generación de RIPS (JSON)</h1><div class="ruta">Estructura simplificada basada en la Resolución 2275 de 2023.</div></div>
+    <div class="panel" style="max-width:640px">
+        <div class="cab"><i class="bi bi-filetype-json"></i> Periodo</div>
+        <form th:action="@{/facturacion/rips/descargar}" method="get">
+            <div class="cuerpo">
+                <div class="campos c2">
+                    <div class="campo"><label>Desde</label><input type="date" name="desde" th:value="${desde}" required></div>
+                    <div class="campo"><label>Hasta</label><input type="date" name="hasta" th:value="${hasta}" required></div>
+                </div>
+                <div class="aviso alerta" style="margin-top:12px"><i class="bi bi-exclamation-triangle"></i><div>Archivo de prueba académica. Antes de reportar a una entidad real debe validarse contra el Mecanismo Único de Validación (MUV) del Ministerio de Salud.</div></div>
+            </div>
+            <div class="pie"><button class="btn primario" type="submit"><i class="bi bi-download"></i> Descargar JSON</button></div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

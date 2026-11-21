@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Catálogo de exámenes', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Catálogo de exámenes</h1><div class="acciones"><a class="btn primario" th:href="@{/laboratorio/examenes/nuevo}"><i class="bi bi-plus"></i> Nuevo examen</a></div></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla">
+                <thead><tr><th>CUPS</th><th>Examen</th><th>Muestra</th><th>Analitos y rangos</th><th class="num">Precio</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="e : ${lista}">
+                    <td><b th:text="${e.codigo}"></b></td>
+                    <td th:text="${e.nombre}"></td>
+                    <td class="sub" th:text="${e.muestra}"></td>
+                    <td><div th:each="a : ${e.analitos}" class="sub" th:text="${a.nombre + ': ' + a.rango() + ' ' + (a.unidad != null ? a.unidad : '')}"></div></td>
+                    <td class="num" th:text="${'$ ' + #numbers.formatDecimal(e.precio, 1, 'POINT', 0, 'COMMA')}"></td>
+                    <td><span class="estado" th:classappend="${e.activo ? 'e-ACTIVO' : 'e-INACTIVO'}" th:text="${e.activo ? 'Activo' : 'Inactivo'}"></span></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/laboratorio/examenes/{id}(id=${e.id})}"><i class="bi bi-pencil"></i></a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

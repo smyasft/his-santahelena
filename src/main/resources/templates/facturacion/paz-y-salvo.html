@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Paz y salvo', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Paz y salvo para egreso</h1><div class="ruta">Requisito para que el gestor de camas registre la salida del paciente.</div></div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-hourglass-split"></i> Pacientes con orden de egreso</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(filas)}">
+                <thead><tr><th>Paciente</th><th>Tipo</th><th>Cama</th><th>Situación</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="f : ${filas}" th:classappend="${f.motivo != null} ? 'fila-aviso'">
+                    <td><b th:text="${f.a.pacienteNombre}"></b><div class="sub" th:text="${f.a.pacienteDocumento}"></div></td>
+                    <td th:text="${f.a.tipo}"></td>
+                    <td th:text="${f.a.camaCodigo != null ? f.a.camaCodigo : '—'}"></td>
+                    <td>
+                        <span th:if="${f.pys != null}" class="estado e-VALIDADA" th:text="${'Expedido ' + f.pys.numero}"></span>
+                        <span th:if="${f.pys == null and f.motivo == null}" class="estado e-ASIGNADA">Listo para expedir</span>
+                        <span th:if="${f.motivo != null}" th:text="${f.motivo}"></span>
+                    </td>
+                    <td class="acc">
+                        <form th:if="${f.pys == null and f.motivo == null}" th:action="@{/facturacion/paz-y-salvo/{id}(id=${f.a.id})}" method="post" class="en-linea">
+                            <button class="btn chico exito" type="submit"><i class="bi bi-check2-square"></i> Expedir</button>
+                        </form>
+                        <a th:if="${f.pys != null}" class="btn chico" th:href="@{/facturacion/paz-y-salvo/{id}/imprimir(id=${f.pys.id})}"><i class="bi bi-printer"></i></a>
+                        <a th:if="${f.motivo != null}" class="btn chico" th:href="@{/facturacion}">Ir a cuentas</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(filas)}"><div th:replace="~{fragmentos :: vacio('No hay pacientes con orden de egreso')}"></div></th:block>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-archive"></i> Expedidos</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(expedidos)}">
+                <thead><tr><th>Número</th><th>Fecha</th><th>Paciente</th><th>Facturas</th><th>Expidió</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="x : ${expedidos}">
+                    <td><b th:text="${x.numero}"></b></td>
+                    <td th:text="${#temporals.format(x.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${x.pacienteNombre}"></td>
+                    <td class="sub" th:text="${x.facturas}"></td>
+                    <td class="sub" th:text="${x.expedidoPor}"></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/facturacion/paz-y-salvo/{id}/imprimir(id=${x.id})}"><i class="bi bi-printer"></i></a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(expedidos)}"><div th:replace="~{fragmentos :: vacio('Ninguno expedido')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Programación quirúrgica', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Programación quirúrgica</h1><div class="ruta">El sistema evita cruces de horario en un mismo quirófano y exige consentimiento aceptado.</div></div>
+    <div class="grid g-7-5">
+        <div class="panel">
+            <div class="cab"><i class="bi bi-calendar3"></i> Cirugías</div>
+            <div class="cuerpo sin tabla-cont">
+                <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                    <thead><tr><th>Inicio</th><th>Quirófano</th><th>Paciente</th><th>Procedimiento</th><th>Dur.</th><th>Estado</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${lista}">
+                        <td><b th:text="${#temporals.format(c.inicio, 'dd/MM HH:mm')}"></b><div class="sub" th:text="${'hasta ' + #temporals.format(c.fin, 'HH:mm')}"></div></td>
+                        <td th:text="${c.quirofano}"></td>
+                        <td th:text="${c.pacienteNombre}"></td>
+                        <td th:text="${c.procedimientoCodigo + ' ' + c.procedimientoNombre}"></td>
+                        <td th:text="${c.duracionMinutos + ' min'}"></td>
+                        <td><span th:replace="~{fragmentos :: estado(${c.estado})}"></span></td>
+                        <td class="acc">
+                            <form th:if="${c.estado == 'PROGRAMADA'}" th:action="@{/especialista/cirugias/{id}/estado(id=${c.id})}" method="post" class="en-linea">
+                                <button class="btn chico exito" name="estado" value="REALIZADA" type="submit">Realizada</button>
+                                <button class="btn chico" name="estado" value="CANCELADA" type="submit" data-confirmar="¿Cancelar la cirugía?">Cancelar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('Sin cirugías programadas')}"></div></th:block>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="cab"><i class="bi bi-plus-circle"></i> Programar</div>
+            <div class="cuerpo">
+                <form class="barra-busqueda" th:action="@{/especialista/cirugias}" method="get" th:if="${p == null}">
+                    <div class="campo"><label>Buscar paciente</label><input type="search" name="q" th:value="${q}"></div>
+                    <button class="btn" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+                <table class="tabla" th:if="${p == null and !#lists.isEmpty(resultados)}" style="margin-top:8px"><tbody>
+                <tr th:each="r : ${resultados}"><td th:text="${r.nombreCompleto() + ' · ' + r.documentoTexto()}"></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/especialista/cirugias(pacienteId=${r.id})}">Elegir</a></td></tr>
+                </tbody></table>
+                <form th:if="${p != null}" th:action="@{/especialista/cirugias}" method="post" autocomplete="off">
+                    <input type="hidden" name="pacienteId" th:value="${p.id}">
+                    <datalist id="lista-cups"></datalist>
+                    <div class="aviso info"><i class="bi bi-person"></i><div><b th:text="${p.nombreCompleto()}"></b> · <span th:text="${p.documentoTexto()}"></span> · <a th:href="@{/especialista/cirugias}">cambiar</a></div></div>
+                    <div class="campos c2">
+                        <div class="campo todo"><label>Procedimiento (CUPS) <span class="req">*</span></label><input type="text" name="procedimientoCodigo" class="autocat" data-tipo="CUPS" list="lista-cups" required placeholder="Ej: 470101 apendicectomía"></div>
+                        <div class="campo"><label>Quirófano</label><select name="quirofano"><option th:each="q : ${quirofanos}" th:text="${q}"></option></select></div>
+                        <div class="campo"><label>Anestesia</label><select name="anestesia"><option>General</option><option>Regional</option><option>Local</option><option>Sedación</option></select></div>
+                        <div class="campo"><label>Inicio <span class="req">*</span></label><input type="datetime-local" name="inicio" required></div>
+                        <div class="campo"><label>Duración (min) <span class="req">*</span></label><input type="number" name="duracion" value="60" min="15" step="15"></div>
+                        <div class="campo todo"><label>Consentimiento informado <span class="req">*</span></label>
+                            <select name="consentimientoId">
+                                <option value="">Seleccione</option>
+                                <option th:each="c : ${consentimientosPaciente}" th:value="${c.id}" th:text="${c.procedimiento + ' · ' + #temporals.format(c.fecha, 'dd/MM/yyyy')}"></option>
+                            </select>
+                            <span class="ayuda" th:if="${#lists.isEmpty(consentimientosPaciente)}">El paciente no tiene consentimientos aceptados. <a th:href="@{/especialista/consentimientos/nuevo(pacienteId=${p.id})}">Diligenciar uno</a>.</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;text-align:right"><button class="btn primario" type="submit"><i class="bi bi-calendar-plus"></i> Programar</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

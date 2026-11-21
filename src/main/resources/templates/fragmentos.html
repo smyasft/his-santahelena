@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Encabezado del paciente: identificación, aseguramiento y alergias siempre visibles -->
+<div th:fragment="banner(p)" class="banner">
+    <div class="foto"><i class="bi" th:classappend="${p.sexo == 'F'} ? 'bi-person-standing-dress' : 'bi-person-standing'"></i></div>
+    <div class="datos">
+        <div class="nombre">
+            <span th:text="${p.nombreCompleto()}">Nombre</span>
+            <span class="chip rojo" th:if="${p.noIdentificado}"><i class="bi bi-question-circle"></i> NO IDENTIFICADO</span>
+        </div>
+        <div class="fila">
+            <span><b th:text="${p.documentoTexto()}">CC 123</b></span>
+            <span>Historia <b th:text="${p.numeroHistoria}">HC-000001</b></span>
+            <span><b th:text="${p.edadTexto()}">30 años</b> · <span th:text="${p.sexoTexto()}">F</span></span>
+            <span th:if="${p.fechaNacimiento != null}">Nac. <b th:text="${#temporals.format(p.fechaNacimiento, 'dd/MM/yyyy')}">01/01/1990</b></span>
+        </div>
+        <div class="fila">
+            <span>EPS <b th:text="${p.epsNombre != null ? p.epsNombre : 'Particular'}">EPS</b></span>
+            <span th:if="${p.regimen != null}">Régimen <b th:text="${p.regimen}">CONTRIBUTIVO</b></span>
+            <span>Derechos <span class="estado" th:classappend="${'e-' + (p.derechosEstado != null ? #strings.replace(p.derechosEstado, ' ', '_') : 'NO_VERIFICABLE')}"
+                                 th:text="${p.derechosEstado != null ? p.derechosEstado : 'SIN CONSULTAR'}">ACTIVO</span></span>
+            <span th:if="${p.telefono != null}"><i class="bi bi-telephone"></i> <span th:text="${p.telefono}">300</span></span>
+            <span th:if="${p.acompananteNombre != null}">Acudiente <b th:text="${p.acompananteNombre + (p.acompananteParentesco != null ? ' (' + p.acompananteParentesco + ')' : '')}">Madre</b></span>
+        </div>
+    </div>
+    <div class="alergias" th:classappend="${p.tieneAlergias()} ? 'si'">
+        <div class="t"><i class="bi" th:classappend="${p.tieneAlergias()} ? 'bi-exclamation-triangle-fill' : 'bi-check-circle'"></i> Alergias</div>
+        <div class="v" th:text="${p.alergiasTexto()}">No refiere</div>
+    </div>
+</div>
+
+<!-- Etiqueta de triaje con colores de la Resolución 5596 de 2015 -->
+<span th:fragment="triaje(n)" class="triaje" th:classappend="${n == null ? 't0' : 't' + n}"
+      th:text="${n == null ? '—' : { '', 'I', 'II', 'III', 'IV', 'V' }[n]}">II</span>
+
+<span th:fragment="estado(e)" class="estado" th:classappend="${'e-' + e}" th:text="${#strings.replace(e, '_', ' ')}">ESTADO</span>
+
+<div th:fragment="vacio(texto)" class="vacio"><i class="bi bi-inbox"></i><span th:text="${texto}">Sin registros</span></div>
+
+<!-- Membrete para documentos imprimibles -->
+<div th:fragment="membrete(titulo)" class="membrete">
+    <span class="logo"><i class="bi bi-hospital"></i></span>
+    <div>
+        <div class="inst" th:text="${cfg.razonSocial}">Clínica</div>
+        <div th:text="${'NIT ' + cfg.nit + ' · Código de habilitación ' + cfg.codigoHabilitacion}">NIT</div>
+        <div th:text="${cfg.ciudad}">Ciudad</div>
+    </div>
+    <div class="der">
+        <b th:text="${titulo}">Documento</b><br>
+        <span th:text="${'Impreso: ' + #temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">fecha</span>
+    </div>
+</div>
+
+<div th:fragment="barraDoc(volver)" class="barra-doc">
+    <a class="btn chico" th:href="@{${volver}}"><i class="bi bi-arrow-left"></i> Volver</a>
+    <span>Vista de impresión</span>
+    <span class="der"><button type="button" class="btn chico primario" data-imprimir><i class="bi bi-printer"></i> Imprimir / Guardar PDF</button></span>
+</div>
+
+<!-- Datos del paciente en documentos impresos -->
+<table th:fragment="pacienteDoc(p)" class="sinborde" style="margin-bottom:6px">
+    <tr>
+        <td><b>Paciente:</b> <span th:text="${p.nombreCompleto()}"></span></td>
+        <td><b>Documento:</b> <span th:text="${p.documentoTexto()}"></span></td>
+        <td><b>Historia:</b> <span th:text="${p.numeroHistoria}"></span></td>
+    </tr>
+    <tr>
+        <td><b>Edad:</b> <span th:text="${p.edadTexto()}"></span> · <span th:text="${p.sexoTexto()}"></span></td>
+        <td><b>EPS:</b> <span th:text="${p.epsNombre != null ? p.epsNombre : 'Particular'}"></span></td>
+        <td><b>Alergias:</b> <span th:text="${p.alergiasTexto()}"></span></td>
+    </tr>
+</table>
+
+</body>
+</html>

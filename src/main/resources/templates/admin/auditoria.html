@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Auditoría', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1>Bitácora de auditoría</h1>
+        <div class="ruta">Registro inalterable de accesos y acciones (solo inserción). Se muestran los 500 más recientes del filtro.</div>
+        <div class="acciones">
+            <a class="btn" th:href="@{/admin/auditoria.csv(usuario=${f.get('usuario')},accion=${f.get('accion')},paciente=${f.get('paciente')},desde=${f.get('desde')},hasta=${f.get('hasta')})}"><i class="bi bi-filetype-csv"></i> Exportar CSV</a>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cuerpo">
+            <form class="barra-busqueda" th:action="@{/admin/auditoria}" method="get">
+                <div class="campo"><label>Usuario</label><input type="text" name="usuario" th:value="${f.get('usuario')}"></div>
+                <div class="campo"><label>Acción</label>
+                    <select name="accion"><option value="">Todas</option>
+                        <option th:each="a : ${acciones}" th:value="${a}" th:text="${a}" th:selected="${f.get('accion') == a}"></option>
+                    </select>
+                </div>
+                <div class="campo"><label>Paciente</label><input type="text" name="paciente" th:value="${f.get('paciente')}"></div>
+                <div class="campo corto"><label>Desde</label><input type="date" name="desde" th:value="${f.get('desde')}"></div>
+                <div class="campo corto"><label>Hasta</label><input type="date" name="hasta" th:value="${f.get('hasta')}"></div>
+                <button class="btn primario" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-journal-text"></i> Eventos <span class="der" th:text="${#lists.size(lista) + ' registro(s)'}"></span></div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla">
+                <thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Recurso</th><th>Paciente</th><th>IP</th><th>Detalle</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${lista}" th:classappend="${a.accion == 'ACCESO_DENEGADO' or a.accion == 'BLOQUEO_CUENTA' or a.accion == 'LOGIN_FALLIDO'} ? 'fila-aviso'">
+                    <td style="white-space:nowrap" th:text="${#temporals.format(a.fecha, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                    <td><b th:text="${a.usuario}"></b><div class="sub" th:text="${a.roles}"></div></td>
+                    <td><span class="chip" th:text="${a.accion}"></span></td>
+                    <td class="sub" th:text="${a.recurso}"></td>
+                    <td th:text="${a.pacienteNombre != null ? a.pacienteNombre : '—'}"></td>
+                    <td class="sub" th:text="${a.ip}"></td>
+                    <td th:text="${a.detalle}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay eventos para el filtro')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina(${u.id == null ? 'Nuevo usuario' : 'Editar usuario'}, ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina">
+        <h1 th:text="${u.id == null ? 'Nuevo usuario' : 'Editar usuario ' + u.username}">Usuario</h1>
+        <div class="acciones"><a class="btn" th:href="@{/admin/usuarios}"><i class="bi bi-arrow-left"></i> Volver</a></div>
+    </div>
+    <form th:action="@{/admin/usuarios/guardar}" method="post" autocomplete="off">
+        <input type="hidden" name="id" th:value="${u.id}">
+        <div class="grid g-8-4">
+            <div class="panel">
+                <div class="cab"><i class="bi bi-person-vcard"></i> Datos del usuario</div>
+                <div class="cuerpo">
+                    <div class="campos c3">
+                        <div class="campo"><label>Usuario <span class="req">*</span></label><input type="text" name="username" th:value="${u.username}" required></div>
+                        <div class="campo s2"><label>Nombre completo <span class="req">*</span></label><input type="text" name="nombre" th:value="${u.nombre}" required></div>
+                        <div class="campo"><label>Documento</label><input type="text" name="documento" th:value="${u.documento}"></div>
+                        <div class="campo s2"><label>Correo</label><input type="email" name="email" th:value="${u.email}"></div>
+                        <div class="campo"><label>Especialidad</label><input type="text" name="especialidad" th:value="${u.especialidad}" placeholder="Solo médicos"></div>
+                        <div class="campo"><label>Registro profesional</label><input type="text" name="registroMedico" th:value="${u.registroMedico}" placeholder="RM / Tarjeta profesional"></div>
+                        <div class="campo"><label th:text="${u.id == null ? 'Contraseña inicial *' : 'Nueva contraseña (opcional)'}">Contraseña</label><input type="password" name="password"></div>
+                        <div class="campo todo ayuda">La contraseña debe tener mínimo 8 caracteres, mayúscula, número y símbolo. Se almacena cifrada con BCrypt.</div>
+                        <div class="campo" th:if="${u.id != null}"><label class="check"><input type="checkbox" name="activo" value="si" th:checked="${u.activo}"> Usuario activo</label></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="cab"><i class="bi bi-person-lock"></i> Roles <span class="req">*</span></div>
+                <div class="cuerpo">
+                    <div th:each="r : ${roles}" style="margin-bottom:6px">
+                        <label class="check"><input type="checkbox" name="roles" th:value="${r.name()}" th:checked="${u.roles.contains(r.name())}"> <span th:text="${r.nombre}"></span></label>
+                    </div>
+                    <p class="ayuda">Los módulos de cada rol se configuran en <a th:href="@{/admin/permisos}">Permisos por rol</a>. El cambio queda en auditoría.</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel"><div class="pie"><a class="btn" th:href="@{/admin/usuarios}">Cancelar</a><button class="btn primario" type="submit"><i class="bi bi-save"></i> Guardar usuario</button></div></div>
+    </form>
+</main>
+</body>
+</html>

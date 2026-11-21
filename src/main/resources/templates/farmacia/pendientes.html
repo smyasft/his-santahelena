@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Farmacia', ~{::main})}">
+<body>
+<main data-recargar="90">
+    <div class="titulo-pagina"><h1>Fórmulas activas</h1><div class="ruta">Valide cada fórmula antes de dispensar. Las pendientes de validación aparecen primero.</div></div>
+    <div class="panel">
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(lista)}">
+                <thead><tr><th>Fecha</th><th>Paciente</th><th>Medicamentos</th><th>Médico</th><th>Alertas</th><th>Validación</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="f : ${lista}">
+                    <td th:text="${#temporals.format(f.fecha, 'dd/MM HH:mm')}"></td>
+                    <td><b th:text="${f.pacienteNombre}"></b><div class="sub" th:text="${f.pacienteDocumento}"></div></td>
+                    <td><div th:each="it : ${f.items}"><span th:text="${it.nombre}"></span> <span class="chip rojo" th:if="${it.controlEspecial}">CE</span> <span class="sub" th:text="${it.cantidadDispensada + '/' + it.cantidad}"></span></div></td>
+                    <td class="sub" th:text="${f.medicoNombre}"></td>
+                    <td><span class="chip rojo" th:if="${!#lists.isEmpty(f.alertas)}" th:text="${#lists.size(f.alertas) + ' alerta(s)'}"></span></td>
+                    <td><span th:replace="~{fragmentos :: estado(${f.validacionFarmacia})}"></span></td>
+                    <td class="acc"><a class="btn chico primario" th:href="@{/farmacia/prescripcion/{id}(id=${f.id})}"><i class="bi bi-box-arrow-in-right"></i> Atender</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(lista)}"><div th:replace="~{fragmentos :: vacio('No hay fórmulas activas')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>

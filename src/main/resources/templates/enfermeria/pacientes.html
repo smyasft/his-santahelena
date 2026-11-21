@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: pagina('Pacientes', ~{::main})}">
+<body>
+<main>
+    <div class="titulo-pagina"><h1>Pacientes a cargo</h1></div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-hospital"></i> Hospitalizados</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(hospitalizados)}">
+                <thead><tr><th>Cama</th><th>Paciente</th><th>Servicio</th><th>Diagnóstico</th><th>Ingreso</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${hospitalizados}">
+                    <td><b th:text="${a.camaCodigo}"></b></td>
+                    <td><b th:text="${a.pacienteNombre}"></b><div class="sub" th:text="${a.pacienteDocumento}"></div></td>
+                    <td th:text="${a.servicio}"></td>
+                    <td th:text="${a.motivo}"></td>
+                    <td th:text="${#temporals.format(a.fechaIngreso, 'dd/MM/yyyy')}"></td>
+                    <td class="acc"><a class="btn chico primario" th:href="@{/enfermeria/paciente/{id}(id=${a.pacienteId})}"><i class="bi bi-clipboard2-pulse"></i> Registro de enfermería</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(hospitalizados)}"><div th:replace="~{fragmentos :: vacio('Sin pacientes hospitalizados')}"></div></th:block>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="cab"><i class="bi bi-truck-front"></i> En urgencias (clasificados)</div>
+        <div class="cuerpo sin tabla-cont">
+            <table class="tabla" th:if="${!#lists.isEmpty(urgencias)}">
+                <thead><tr><th>Triaje</th><th>Paciente</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${urgencias}">
+                    <td><span th:replace="~{fragmentos :: triaje(${a.triajeNivel})}"></span></td>
+                    <td><b th:text="${a.pacienteNombre}"></b></td>
+                    <td th:text="${a.motivo}"></td>
+                    <td><span th:replace="~{fragmentos :: estado(${a.estado})}"></span></td>
+                    <td class="acc"><a class="btn chico" th:href="@{/enfermeria/paciente/{id}(id=${a.pacienteId})}">Abrir</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <th:block th:if="${#lists.isEmpty(urgencias)}"><div th:replace="~{fragmentos :: vacio('Sin pacientes en urgencias')}"></div></th:block>
+        </div>
+    </div>
+</main>
+</body>
+</html>
